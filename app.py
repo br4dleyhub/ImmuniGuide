@@ -47,7 +47,7 @@ def get_news():
 
         response = requests.get(
             WHO_API,
-            timeout=10
+            timeout=30
         )
 
         response.raise_for_status()
