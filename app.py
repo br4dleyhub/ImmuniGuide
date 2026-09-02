@@ -13,7 +13,6 @@ app = Flask(__name__)
 
 DATABASE = os.path.join(
     os.path.dirname(__file__),
-    "..",
     "immunisation-2.db"
 )
 
