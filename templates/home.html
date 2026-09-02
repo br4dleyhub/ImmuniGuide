@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home | ImmuniGuide
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+
+<section class="home-hero">
+
+    <div class="home-hero-content">
+
+        <div class="hero-copy">
+
+            <p class="eyebrow">
+                IMMUNISATION DATA EXPLORER
+            </p>
+
+            <h1>
+                Understand immunisation data.
+                <span>Simply.</span>
+            </h1>
+
+            <p class="hero-text">
+                Explore vaccination coverage across countries and
+                years through clear results, comparisons and trends.
+            </p>
+
+            <div class="hero-buttons">
+
+                <a
+                    href="{{ url_for('explore') }}"
+                    class="primary-button">
+
+                    Explore Immunisation
+
+                </a>
+
+                <a
+                    href="{{ url_for('compare') }}"
+                    class="secondary-button">
+
+                    Compare Data
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- HERO DATA PANEL -->
+
+        <div class="hero-data-card">
+
+            <div class="hero-data-header">
+
+                <span class="hero-data-label">
+                    IMMUNISATION
+                </span>
+
+                <span class="hero-status">
+                    DATA
+                </span>
+
+            </div>
+
+
+            <div class="hero-data-main">
+
+                <span class="hero-data-number">
+                    2000–2024
+                </span>
+
+                <p>
+                    Years available in the
+                    ImmuniGuide dataset.
+                </p>
+
+            </div>
+
+
+            <div class="hero-data-lines">
+
+                <div>
+                    <span>EXPLORE</span>
+                    <strong>Coverage</strong>
+                </div>
+
+                <div>
+                    <span>COMPARE</span>
+                    <strong>Years</strong>
+                </div>
+
+                <div>
+                    <span>ANALYSE</span>
+                    <strong>Trends</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ABOUT -->
+
+<section class="home-about">
+
+    <div class="home-about-content">
+
+        <div>
+
+            <p class="eyebrow">
+                ABOUT IMMUNIGUIDE
+            </p>
+
+            <h2>
+                Making vaccination data easier to understand
+            </h2>
+
+        </div>
+
+        <p class="home-about-text">
+
+            Immunisation datasets can contain large amounts of
+            information, including countries, years, vaccine
+            categories and coverage percentages.
+
+            <br><br>
+
+            ImmuniGuide transforms this information into simple,
+            accessible results that make vaccination data easier
+            to explore and understand.
+
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- FEATURES -->
+
+<section class="home-features">
+
+    <div class="home-section-heading">
+
+        <p class="eyebrow">
+            WHAT YOU CAN DO
+        </p>
+
+        <h2>
+            Explore the data your way
+        </h2>
+
+    </div>
+
+
+    <div class="features">
+
+
+        <!-- EXPLORE -->
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                01
+            </div>
+
+            <h3>
+                Explore
+            </h3>
+
+            <p>
+                Select a country, vaccine and year to view
+                vaccination coverage and supporting
+                immunisation information.
+            </p>
+
+            <a href="{{ url_for('explore') }}">
+                Explore data
+                <span>→</span>
+            </a>
+
+        </div>
+
+
+        <!-- COMPARE -->
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                02
+            </div>
+
+            <h3>
+                Compare
+            </h3>
+
+            <p>
+                Compare vaccination coverage between two
+                different years for the same country
+                and vaccine.
+            </p>
+
+            <a href="{{ url_for('compare') }}">
+                Compare data
+                <span>→</span>
+            </a>
+
+        </div>
+
+
+        <!-- TRENDS -->
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                03
+            </div>
+
+            <h3>
+                Understand
+            </h3>
+
+            <p>
+                Follow vaccination coverage over time and
+                identify changes, highest values and
+                lowest values.
+            </p>
+
+            <a href="{{ url_for('trends') }}">
+                View trends
+                <span>→</span>
+
+            </a>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+<!-- INSIGHTS CTA -->
+
+<section class="home-insights">
+
+    <div class="home-insights-content">
+
+        <div>
+
+            <p class="eyebrow">
+                STAY INFORMED
+            </p>
+
+            <h2>
+                Keep up with immunisation developments
+            </h2>
+
+            <p>
+                Access the latest available World Health
+                Organization news through the ImmuniGuide
+                insights feed.
+            </p>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('insights') }}"
+            class="primary-button">
+
+            View Latest Insights
+
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}

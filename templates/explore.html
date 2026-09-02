@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}
+Explore | ImmuniGuide
+{% endblock %}
+
+{% block content %}
+
+<section class="explore-page">
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <p class="eyebrow">
+            EXPLORE IMMUNISATION
+        </p>
+
+        <h1>
+            Explore vaccination data
+        </h1>
+
+        <p>
+            Select a country, year and vaccine to explore
+            immunisation information.
+        </p>
+
+    </div>
+
+
+    <!-- SEARCH CARD -->
+
+    <div class="search-card">
+
+        <form method="GET" action="/explore">
+
+            <!-- COUNTRY -->
+
+            <div class="form-group">
+
+                <label for="country">
+                    Country
+                </label>
+
+                <select id="country" name="country">
+
+                    <option value="">
+                        Select a country
+                    </option>
+
+                    {% for country in countries %}
+
+                    <option
+                        value="{{ country['CountryID'] }}"
+                        {% if country['CountryID'] == request.args.get('country') %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ country['name'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- YEAR -->
+
+            <div class="form-group">
+
+                <label for="year">
+                    Year
+                </label>
+
+                <select id="year" name="year">
+
+                    <option value="">
+                        Select a year
+                    </option>
+
+                    {% for year in years %}
+
+                    <option
+                        value="{{ year['YearID'] }}"
+                        {% if year['YearID']|string == request.args.get('year') %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ year['YearID'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- VACCINE -->
+
+            <div class="form-group">
+
+                <label for="antigen">
+                    Vaccine
+                </label>
+
+                <select id="antigen" name="antigen">
+
+                    <option value="">
+                        Select a vaccine
+                    </option>
+
+                    {% for antigen in antigens %}
+
+                    <option
+                        value="{{ antigen['AntigenID'] }}"
+                        {% if antigen['AntigenID'] == request.args.get('antigen') %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ antigen['name'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <button
+                type="submit"
+                class="primary-button">
+
+                Explore Data
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         RESULT
+         ===================================================== -->
+
+    {% if result %}
+
+    <div class="explore-result">
+
+
+        <!-- RESULT HEADER -->
+
+        <div class="explore-result-header">
+
+            <div>
+
+                <p class="eyebrow">
+                    IMMUNISATION RESULT
+                </p>
+
+                <h2>
+                    {{ result['vaccine_name'] }}
+                </h2>
+
+                <p class="result-location">
+                    {{ result['country_name'] }}
+                    ·
+                    {{ result['year'] }}
+                </p>
+
+            </div>
+
+
+            {% if coverage_level %}
+
+            <div class="coverage-badge">
+
+                {{ coverage_level }}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- COVERAGE MAIN CARD -->
+
+        <div class="coverage-highlight">
+
+            <div class="coverage-main">
+
+                <span>
+                    VACCINATION COVERAGE
+                </span>
+
+                {% if people_per_100 is not none %}
+
+                <strong>
+                    {{ people_per_100 }}%
+                </strong>
+
+                {% else %}
+
+                <strong>
+                    N/A
+                </strong>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if people_per_100 is not none %}
+
+            <div class="explore-progress-wrapper">
+
+                <progress
+                    class="explore-progress"
+                    value="{{ people_per_100 }}"
+                    max="100">
+                </progress>
+
+            </div>
+
+
+            <p class="coverage-explanation">
+
+                Approximately
+                <strong>{{ people_per_100 }}</strong>
+                out of every 100 people in the target
+                population received this vaccine.
+
+            </p>
+
+            {% else %}
+
+            <p class="coverage-explanation">
+
+                Coverage data is not available for
+                this selection.
+
+            </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- SUPPORTING STATISTICS -->
+
+        <div class="explore-stat-grid">
+
+
+            <!-- TARGET POPULATION -->
+
+            <div class="explore-stat-card">
+
+                <span class="stat-label">
+                    TARGET POPULATION
+                </span>
+
+                <strong>
+
+                    {% if target_population is not none %}
+
+                        {{ target_population }}
+
+                    {% else %}
+
+                        N/A
+
+                    {% endif %}
+
+                </strong>
+
+                <p>
+                    People included in the target group
+                </p>
+
+            </div>
+
+
+            <!-- DOSES -->
+
+            <div class="explore-stat-card">
+
+                <span class="stat-label">
+                    DOSES ADMINISTERED
+                </span>
+
+                <strong>
+
+                    {% if doses_administered is not none %}
+
+                        {{ doses_administered }}
+
+                    {% else %}
+
+                        N/A
+
+                    {% endif %}
+
+                </strong>
+
+                <p>
+                    Recorded doses administered
+                </p>
+
+            </div>
+
+
+            <!-- YEAR -->
+
+            <div class="explore-stat-card">
+
+                <span class="stat-label">
+                    REPORTING YEAR
+                </span>
+
+                <strong>
+                    {{ result['year'] }}
+                </strong>
+
+                <p>
+                    Year represented by the data
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- INTERPRETATION -->
+
+        <div class="explore-insight">
+
+            <div class="insight-label">
+                DATA INTERPRETATION
+            </div>
+
+            {% if coverage_level %}
+
+            <p>
+
+                The selected vaccination programme recorded
+                <strong>{{ result['coverage'] }}%</strong>
+                coverage in
+                <strong>{{ result['country_name'] }}</strong>
+                during
+                <strong>{{ result['year'] }}</strong>.
+
+                This represents
+                <strong>{{ coverage_level|lower }}</strong>
+                according to the coverage classification
+                used by ImmuniGuide.
+
+            </p>
+
+            {% else %}
+
+            <p>
+                Coverage information is unavailable for
+                this selection, so a coverage classification
+                cannot be calculated.
+            </p>
+
+            {% endif %}
+
+        </div>
+
+
+    </div>
+
+    {% endif %}
+
+
+</section>
+
+{% endblock %}

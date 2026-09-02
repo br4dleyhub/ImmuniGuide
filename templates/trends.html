@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}
+Trends | ImmuniGuide
+{% endblock %}
+
+{% block content %}
+
+<section class="explore-page">
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <p class="eyebrow">
+            IMMUNISATION TRENDS
+        </p>
+
+        <h1>
+            Vaccination Coverage Over Time
+        </h1>
+
+        <p>
+            Explore how immunisation coverage has changed
+            across different years.
+        </p>
+
+    </div>
+
+
+    <!-- SEARCH CARD -->
+
+    <div class="search-card">
+
+        <form method="GET" action="/trends">
+
+            <!-- COUNTRY -->
+
+            <div class="form-group">
+
+                <label for="country">
+                    Country
+                </label>
+
+                <select id="country" name="country">
+
+                    <option value="">
+                        Select a country
+                    </option>
+
+                    {% for country in countries %}
+
+                    <option
+                        value="{{ country['CountryID'] }}"
+                        {% if country['CountryID'] == request.args.get('country') %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ country['name'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- VACCINE -->
+
+            <div class="form-group">
+
+                <label for="antigen">
+                    Vaccine
+                </label>
+
+                <select id="antigen" name="antigen">
+
+                    <option value="">
+                        Select a vaccine
+                    </option>
+
+                    {% for antigen in antigens %}
+
+                    <option
+                        value="{{ antigen['AntigenID'] }}"
+                        {% if antigen['AntigenID'] == request.args.get('antigen') %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ antigen['name'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <button
+                type="submit"
+                class="primary-button">
+
+                View Trends
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         RESULTS
+         ===================================================== -->
+
+    {% if trend_data %}
+
+    <div class="trend-results">
+
+
+        <!-- SUMMARY -->
+
+        <div class="trend-summary">
+
+
+            <!-- STARTING -->
+
+            <div class="trend-stat">
+
+                <span>
+                    STARTING COVERAGE
+                </span>
+
+                <strong>
+                    {{ first_coverage }}%
+                </strong>
+
+                <p>
+                    First available year
+                </p>
+
+            </div>
+
+
+            <!-- LATEST -->
+
+            <div class="trend-stat">
+
+                <span>
+                    LATEST COVERAGE
+                </span>
+
+                <strong>
+                    {{ latest_coverage }}%
+                </strong>
+
+                <p>
+                    Most recent available year
+                </p>
+
+            </div>
+
+
+            <!-- CHANGE -->
+
+            <div class="trend-stat">
+
+                <span>
+                    OVERALL CHANGE
+                </span>
+
+                <strong
+                    class="
+                    {% if coverage_change > 0 %}
+                        trend-positive
+                    {% elif coverage_change < 0 %}
+                        trend-negative
+                    {% else %}
+                        trend-neutral
+                    {% endif %}
+                    "
+                >
+
+                    {% if coverage_change > 0 %}
+                        +{{ coverage_change }}
+                    {% else %}
+                        {{ coverage_change }}
+                    {% endif %}
+
+                    <small>
+                        pp
+                    </small>
+
+                </strong>
+
+                <p>
+                    Change from first to latest year
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             YEARLY TREND
+             ================================================= -->
+
+        <div class="result-card">
+
+
+            <div class="trend-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        YEARLY COVERAGE
+                    </p>
+
+                    <h2>
+                        Coverage Trend
+                    </h2>
+
+                </div>
+
+
+                <span class="trend-period">
+
+                    {{ trend_data[0]['year'] }}
+                    –
+                    {{ trend_data[-1]['year'] }}
+
+                </span>
+
+            </div>
+
+
+            <div class="trend-list">
+
+                {% for row in trend_data %}
+
+                <div class="trend-item">
+
+
+                    <div class="coverage-label">
+
+                        <span>
+                            {{ row['year'] }}
+                        </span>
+
+                        <strong>
+                            {{ row['coverage'] }}%
+                        </strong>
+
+                    </div>
+
+
+                    <progress
+                        class="coverage-progress"
+                        value="{{ row['width'] }}"
+                        max="100"
+                        aria-label="Vaccination coverage for {{ row['year'] }}">
+
+                        {{ row['coverage'] }}%
+
+                    </progress>
+
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             HIGHEST / LOWEST
+             ================================================= -->
+
+        <div class="trend-extremes">
+
+
+            <!-- HIGHEST -->
+
+            <div class="extreme-card">
+
+                <span class="extreme-label">
+                    HIGHEST COVERAGE
+                </span>
+
+                <strong>
+                    {{ highest['coverage'] }}%
+                </strong>
+
+                <p>
+                    Recorded in {{ highest['year'] }}
+                </p>
+
+            </div>
+
+
+            <!-- LOWEST -->
+
+            <div class="extreme-card">
+
+                <span class="extreme-label">
+                    LOWEST COVERAGE
+                </span>
+
+                <strong>
+                    {{ lowest['coverage'] }}%
+                </strong>
+
+                <p>
+                    Recorded in {{ lowest['year'] }}
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+    {% endif %}
+
+
+</section>
+
+{% endblock %}

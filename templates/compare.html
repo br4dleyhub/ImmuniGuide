@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}
+Compare | ImmuniGuide
+{% endblock %}
+
+{% block content %}
+
+<section class="explore-page">
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <p class="eyebrow">
+            COMPARE IMMUNISATION
+        </p>
+
+        <h1>
+            Compare vaccination coverage
+        </h1>
+
+        <p>
+            Select a country, vaccine and two years
+            to compare immunisation coverage.
+        </p>
+
+    </div>
+
+
+    <!-- SEARCH CARD -->
+
+    <div class="search-card">
+
+        <form method="GET" action="/compare">
+
+            <!-- COUNTRY -->
+
+            <div class="form-group">
+
+                <label for="country">
+                    Country
+                </label>
+
+                <select id="country" name="country">
+
+                    <option value="">
+                        Select a country
+                    </option>
+
+                    {% for country in countries %}
+
+                    <option
+                        value="{{ country['CountryID'] }}"
+                        {% if country['CountryID'] == request.args.get('country') %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ country['name'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- VACCINE -->
+
+            <div class="form-group">
+
+                <label for="antigen">
+                    Vaccine
+                </label>
+
+                <select id="antigen" name="antigen">
+
+                    <option value="">
+                        Select a vaccine
+                    </option>
+
+                    {% for antigen in antigens %}
+
+                    <option
+                        value="{{ antigen['AntigenID'] }}"
+                        {% if antigen['AntigenID'] == request.args.get('antigen') %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ antigen['name'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- FIRST YEAR -->
+
+            <div class="form-group">
+
+                <label for="year1">
+                    First year
+                </label>
+
+                <select id="year1" name="year1">
+
+                    <option value="">
+                        Select first year
+                    </option>
+
+                    {% for year in years %}
+
+                    <option
+                        value="{{ year['YearID'] }}"
+                        {% if year['YearID']|string == request.args.get('year1') %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ year['YearID'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- SECOND YEAR -->
+
+            <div class="form-group">
+
+                <label for="year2">
+                    Second year
+                </label>
+
+                <select id="year2" name="year2">
+
+                    <option value="">
+                        Select second year
+                    </option>
+
+                    {% for year in years %}
+
+                    <option
+                        value="{{ year['YearID'] }}"
+                        {% if year['YearID']|string == request.args.get('year2') %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ year['YearID'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <button
+                type="submit"
+                class="primary-button">
+
+                Compare Data
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         RESULTS
+         ===================================================== -->
+
+    {% if result1 and result2 %}
+
+    <div class="compare-results">
+
+
+        <!-- RESULT HEADER -->
+
+        <div class="compare-heading">
+
+            <div>
+
+                <p class="eyebrow">
+                    COVERAGE COMPARISON
+                </p>
+
+                <h2>
+                    Vaccination coverage by year
+                </h2>
+
+            </div>
+
+
+            {% if comparison_status %}
+
+            <div class="comparison-badge">
+
+                {{ comparison_status }}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- YEAR CARDS -->
+
+        <div class="comparison-cards">
+
+
+            <!-- YEAR 1 -->
+
+            <div class="year-card">
+
+                <div class="year-card-top">
+
+                    <span>
+                        {{ year1 }}
+                    </span>
+
+                    <strong>
+                        {{ result1["coverage"] }}%
+                    </strong>
+
+                </div>
+
+
+                <progress
+                    class="comparison-progress"
+                    value="{{ result1['coverage'] }}"
+                    max="100">
+                </progress>
+
+
+                <p>
+                    Vaccination coverage
+                </p>
+
+            </div>
+
+
+            <!-- YEAR 2 -->
+
+            <div class="year-card">
+
+                <div class="year-card-top">
+
+                    <span>
+                        {{ year2 }}
+                    </span>
+
+                    <strong>
+                        {{ result2["coverage"] }}%
+                    </strong>
+
+                </div>
+
+
+                <progress
+                    class="comparison-progress"
+                    value="{{ result2['coverage'] }}"
+                    max="100">
+                </progress>
+
+
+                <p>
+                    Vaccination coverage
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             OVERALL CHANGE
+             ================================================= -->
+
+        {% if coverage_change is not none %}
+
+        <div class="change-card">
+
+            <div class="change-label">
+
+                <span>
+                    OVERALL CHANGE
+                </span>
+
+            </div>
+
+
+            <div class="change-content">
+
+                <strong
+                    class="
+                    {% if coverage_change > 0 %}
+                        change-positive
+                    {% elif coverage_change < 0 %}
+                        change-negative
+                    {% else %}
+                        change-neutral
+                    {% endif %}
+                    "
+                >
+
+                    {% if coverage_change > 0 %}
+
+                        +{{ coverage_change }}
+
+                    {% else %}
+
+                        {{ coverage_change }}
+
+                    {% endif %}
+
+                    <small>
+                        percentage points
+                    </small>
+
+                </strong>
+
+
+                <p>
+                    {{ comparison_message }}
+                </p>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+    </div>
+
+    {% endif %}
+
+
+</section>
+
+{% endblock %}

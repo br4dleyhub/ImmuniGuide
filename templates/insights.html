@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}
+Insights | ImmuniGuide
+{% endblock %}
+
+{% block content %}
+
+<section class="explore-page">
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <p class="eyebrow">
+            IMMUNISATION INSIGHTS
+        </p>
+
+        <h1>
+            Latest Immunisation News
+        </h1>
+
+        <p>
+            Stay informed about the latest developments
+            in vaccination, immunisation and global health.
+        </p>
+
+    </div>
+
+
+    <!-- LIVE FEED HEADER -->
+
+    <div class="live-header">
+
+        <div class="live-status">
+
+            <span class="live-dot"></span>
+
+            <strong>
+                LIVE WHO FEED
+            </strong>
+
+        </div>
+
+        <span class="update-time">
+            Latest available updates
+        </span>
+
+    </div>
+
+
+    <!-- NEWS -->
+
+    {% if articles %}
+
+    <div class="insights-grid">
+
+        {% for article in articles %}
+
+        <article class="insight-news-card">
+
+            <!-- CATEGORY -->
+
+            <div class="news-card-top">
+
+                <span class="news-category">
+                    {{ article.category }}
+                </span>
+
+                {% if article.news_type %}
+
+                <span class="news-type">
+                    {{ article.news_type }}
+                </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- TITLE -->
+
+            <h2>
+                {{ article.title }}
+            </h2>
+
+
+            <!-- DATE -->
+
+            {% if article.published %}
+
+            <p class="news-date">
+                {{ article.published }}
+            </p>
+
+            {% endif %}
+
+
+            <!-- DESCRIPTION -->
+
+            <p class="news-description">
+
+                Latest information from the
+                World Health Organization relating to
+                global health, vaccination and
+                immunisation developments.
+
+            </p>
+
+
+            <!-- LINK -->
+
+            <a
+                href="{{ article.link }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="news-link">
+
+                Read article
+                <span>→</span>
+
+            </a>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- FEED INFORMATION -->
+
+    <div class="feed-information">
+
+        <div>
+
+            <span class="feed-info-label">
+                SOURCE
+            </span>
+
+            <strong>
+                World Health Organization
+            </strong>
+
+        </div>
+
+        <div>
+
+            <span class="feed-info-label">
+                DATA TYPE
+            </span>
+
+            <strong>
+                Live news feed
+            </strong>
+
+        </div>
+
+        <div>
+
+            <span class="feed-info-label">
+                UPDATES
+            </span>
+
+            <strong>
+                Latest available articles
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    {% else %}
+
+    <!-- ERROR STATE -->
+
+    <div class="empty-news">
+
+        <div class="empty-news-icon">
+            !
+        </div>
+
+        <p class="eyebrow">
+            NEWS FEED
+        </p>
+
+        <h2>
+            Unable to load news
+        </h2>
+
+        <p>
+            The latest immunisation news could not be
+            loaded right now. Please try again.
+        </p>
+
+        <button
+            type="button"
+            class="primary-button"
+            onclick="window.location.reload()">
+
+            Refresh Feed
+
+        </button>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- REFRESH -->
+
+    {% if articles %}
+
+    <div class="refresh-container">
+
+        <button
+            type="button"
+            class="primary-button"
+            onclick="window.location.reload()">
+
+            Refresh News
+
+        </button>
+
+    </div>
+
+    {% endif %}
+
+
+</section>
+
+{% endblock %}
