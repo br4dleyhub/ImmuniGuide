@@ -68,7 +68,26 @@ def get_news():
             )
 
 
-        # Keep the latest 10 articles.
+        # -------------------------------------------------
+        # DEBUG: Show the URLs returned by WHO
+        # -------------------------------------------------
+
+        print("WHO ARTICLES:")
+
+        for item in data[:10]:
+
+            print(
+                item.get("Title"),
+                "=>",
+                item.get("ItemDefaultUrl"),
+                "=>",
+                item.get("UrlName")
+            )
+
+
+        # -------------------------------------------------
+        # Process latest 10 articles
+        # -------------------------------------------------
 
         for item in data[:10]:
 
@@ -90,6 +109,13 @@ def get_news():
             if link.startswith("/"):
 
                 link = "https://www.who.int" + link
+
+
+            # Skip articles without a usable URL.
+
+            if not link or link == "#":
+
+                continue
 
 
             published = item.get(
@@ -173,6 +199,10 @@ def get_news():
                 category = "HEALTH NEWS"
 
 
+            # -------------------------------------------------
+            # Add article
+            # -------------------------------------------------
+
             articles.append({
 
                 "title": title,
@@ -199,7 +229,6 @@ def get_news():
         )
 
         return []
-
 
 # =========================================================
 # HOME
