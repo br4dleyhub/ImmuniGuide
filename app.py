@@ -2,9 +2,15 @@ from flask import Flask, render_template, request
 import sqlite3
 import os
 import requests
+from datetime import datetime
 
 
 app = Flask(__name__)
+
+print("====================================================")
+print("THIS IS MY APP.PY")
+print("APP FILE:", __file__)
+print("====================================================")
 
 
 # =========================================================
@@ -47,7 +53,7 @@ def get_news():
 
         response = requests.get(
             WHO_API,
-            timeout=30
+            timeout=45
         )
 
         response.raise_for_status()
@@ -56,9 +62,9 @@ def get_news():
 
         articles = []
 
-
-        # WHO API may return the articles
-        # inside a "value" object.
+        # -------------------------------------------------
+        # WHO API may return articles inside a "value" object
+        # -------------------------------------------------
 
         if isinstance(data, dict):
 
@@ -67,35 +73,75 @@ def get_news():
                 []
             )
 
+        # Make sure data is a list
+
+        if not isinstance(data, list):
+
+            data = []
 
         # -------------------------------------------------
-        # DEBUG: Show the URLs returned by WHO
+        # Sort WHO articles by REAL publication date
         # -------------------------------------------------
 
-        print("WHO ARTICLES:")
+        def get_date(item):
+
+            date = item.get(
+                "FormatedDate",
+                ""
+            )
+
+            try:
+
+                return datetime.strptime(
+                    date,
+                    "%d %B %Y"
+                )
+
+            except (ValueError, TypeError):
+
+                return datetime.min
+
+
+        data.sort(
+            key=get_date,
+            reverse=True
+        )
+
+
+        # -------------------------------------------------
+        # DEBUG: Show sorted WHO articles
+        # -------------------------------------------------
+
+        print("SORTED WHO ARTICLES:")
 
         for item in data[:10]:
 
             print(
                 item.get("Title"),
-                "=>",
-                item.get("ItemDefaultUrl"),
-                "=>",
-                item.get("UrlName")
+                "=> DATE:",
+                item.get("FormatedDate")
             )
 
 
         # -------------------------------------------------
-        # Process latest 10 articles
+        # Process the 10 newest articles
         # -------------------------------------------------
 
         for item in data[:10]:
 
+            # -------------------------------------------------
+            # Article title
+            # -------------------------------------------------
+
             title = item.get(
                 "Title",
-                "No title"
+                "WHO News"
             )
 
+
+            # -------------------------------------------------
+            # Article URL
+            # -------------------------------------------------
 
             link = item.get(
                 "ItemDefaultUrl",
@@ -106,9 +152,12 @@ def get_news():
             # Convert relative WHO links
             # into complete URLs.
 
-            if link.startswith("/"):
+            if link and link.startswith("/"):
 
-                link = "https://www.who.int" + link
+                link = (
+                    "https://www.who.int"
+                    + link
+                )
 
 
             # Skip articles without a usable URL.
@@ -118,11 +167,19 @@ def get_news():
                 continue
 
 
+            # -------------------------------------------------
+            # Publication date
+            # -------------------------------------------------
+
             published = item.get(
                 "FormatedDate",
                 ""
             )
 
+
+            # -------------------------------------------------
+            # WHO news type
+            # -------------------------------------------------
 
             news_type = item.get(
                 "NewsType",
@@ -137,59 +194,63 @@ def get_news():
             title_lower = title.lower()
 
 
-            if any(word in title_lower for word in [
-
-                "ebola",
-                "measles",
-                "polio",
-                "outbreak",
-                "disease",
-                "mpox",
-                "cholera",
-                "infection"
-
-            ]):
+            if any(
+                word in title_lower
+                for word in [
+                    "ebola",
+                    "measles",
+                    "polio",
+                    "outbreak",
+                    "disease",
+                    "mpox",
+                    "cholera",
+                    "infection"
+                ]
+            ):
 
                 category = "OUTBREAK"
 
 
-            elif any(word in title_lower for word in [
-
-                "trial",
-                "research",
-                "development",
-                "candidate",
-                "mrna",
-                "clinical"
-
-            ]):
+            elif any(
+                word in title_lower
+                for word in [
+                    "trial",
+                    "research",
+                    "development",
+                    "candidate",
+                    "mrna",
+                    "clinical"
+                ]
+            ):
 
                 category = "VACCINE DEVELOPMENT"
 
 
-            elif any(word in title_lower for word in [
-
-                "vaccine",
-                "vaccination",
-                "immunisation",
-                "immunization",
-                "coverage",
-                "vaccinated"
-
-            ]):
+            elif any(
+                word in title_lower
+                for word in [
+                    "vaccine",
+                    "vaccination",
+                    "immunisation",
+                    "immunization",
+                    "coverage",
+                    "vaccinated"
+                ]
+            ):
 
                 category = "IMMUNISATION"
 
 
-            elif any(word in title_lower for word in [
-
-                "guidance",
-                "recommendation",
-                "position paper",
-                "policy",
-                "guideline"
-
-            ]):
+            elif any(
+                word in title_lower
+                for word in [
+                    "guidance",
+                    "recommendation",
+                    "position paper",
+                    "policy",
+                    "guideline"
+                ]
+            ):
 
                 category = "POLICY"
 
@@ -230,6 +291,7 @@ def get_news():
 
         return []
 
+
 # =========================================================
 # HOME
 # =========================================================
@@ -261,6 +323,14 @@ def explore():
         "antigen"
     )
 
+    # PER is currently used as the default
+    # vaccination information type.
+
+    inf_type = request.args.get(
+        "inf_type",
+        "PER"
+    )
+
 
     connection = get_db_connection()
 
@@ -283,11 +353,13 @@ def explore():
         WHERE Vaccination.country = ?
           AND Vaccination.year = ?
           AND Vaccination.antigen = ?
+          AND Vaccination.inf_type = ?
         """,
         (
             country,
             year,
-            antigen
+            antigen,
+            inf_type
         )
     ).fetchone()
 
@@ -551,11 +623,13 @@ def compare():
             WHERE country = ?
               AND antigen = ?
               AND year = ?
+              AND inf_type = ?
             """,
             (
                 country,
                 antigen,
-                year1
+                year1,
+                "PER"
             )
         ).fetchone()
 
@@ -567,11 +641,13 @@ def compare():
             WHERE country = ?
               AND antigen = ?
               AND year = ?
+              AND inf_type = ?
             """,
             (
                 country,
                 antigen,
-                year2
+                year2,
+                "PER"
             )
         ).fetchone()
 
@@ -773,11 +849,13 @@ def trends():
             FROM Vaccination
             WHERE country = ?
               AND antigen = ?
+              AND inf_type = ?
             ORDER BY year
             """,
             (
                 country,
-                antigen
+                antigen,
+                "PER"
             )
         ).fetchall()
 
