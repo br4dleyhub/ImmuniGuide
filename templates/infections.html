@@ -1,0 +1,874 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}
+
+Infection Data | ImmuniGuide
+
+{% endblock %}
+
+{% block content %}
+
+<section class="explore-page">
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <p class="eyebrow">
+            INFECTION DATA
+        </p>
+
+        <h1>
+            Understand Infection Patterns
+        </h1>
+
+        <p>
+            Explore infection cases by economic status
+            and compare countries with the global infection rate.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         LEVEL 2B
+         ===================================================== -->
+
+    <div class="infection-section">
+
+        <div class="page-header">
+
+            <p class="eyebrow">
+                LEVEL 2B
+            </p>
+
+            <h2>
+                Infection Data by Economic Status
+            </h2>
+
+            <p>
+                Select an economic status, infection type and year
+                to explore reported infection cases across countries.
+            </p>
+
+        </div>
+
+
+        <!-- LEVEL 2B SEARCH -->
+
+        <div class="search-card">
+
+            <form
+                method="GET"
+                action="{{ url_for('infections') }}"
+            >
+
+                <!-- Economic status -->
+
+                <div class="form-group">
+
+                    <label for="economy">
+                        Economic Status
+                    </label>
+
+                    <select
+                        id="economy"
+                        name="economy"
+                        required
+                    >
+
+                        <option value="">
+                            Select economic status
+                        </option>
+
+                        {% for economy in economies %}
+
+                        <option
+                            value="{{ economy['economyID'] }}"
+                            {% if selected_economy == economy['economyID']|string %}
+                            selected
+                            {% endif %}
+                        >
+
+                            {{ economy['phase'] }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Infection type -->
+
+                <div class="form-group">
+
+                    <label for="infection">
+                        Infection Type
+                    </label>
+
+                    <select
+                        id="infection"
+                        name="infection"
+                        required
+                    >
+
+                        <option value="">
+                            Select infection type
+                        </option>
+
+                        {% for infection in infection_types %}
+
+                        <option
+                            value="{{ infection['id'] }}"
+                            {% if selected_infection == infection['id'] %}
+                            selected
+                            {% endif %}
+                        >
+
+                            {{ infection['description'] }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Year -->
+
+                <div class="form-group">
+
+                    <label for="year">
+                        Year
+                    </label>
+
+                    <select
+                        id="year"
+                        name="year"
+                        required
+                    >
+
+                        <option value="">
+                            Select year
+                        </option>
+
+                        {% for year_item in years %}
+
+                        <option
+                            value="{{ year_item['year'] }}"
+                            {% if selected_year == year_item['year']|string %}
+                            selected
+                            {% endif %}
+                        >
+
+                            {{ year_item['year'] }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+
+                    Explore Infection Data
+
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- =====================================================
+             LEVEL 2B RESULTS
+             ===================================================== -->
+
+        {% if results %}
+
+        <div class="explore-result">
+
+            <div class="explore-result-header">
+
+                <div>
+
+                    <p class="eyebrow">
+                        LEVEL 2B RESULTS
+                    </p>
+
+                    <h2>
+                        Infection Cases by Economic Status
+                    </h2>
+
+                    <p class="result-location">
+
+                        {{ results|length }}
+                        countries found
+
+                        ·
+
+                        {{ results[0]['infection_type'] }}
+
+                        ·
+
+                        {{ results[0]['year'] }}
+
+                    </p>
+
+                </div>
+
+
+                <div class="coverage-badge">
+
+                    {{ results[0]['economic_status'] }}
+
+                </div>
+
+            </div>
+
+
+            <!-- LEVEL 2B SUMMARY -->
+
+            <div class="explore-stat-grid">
+
+                <div class="explore-stat-card">
+
+                    <span class="stat-label">
+                        ECONOMIC STATUS
+                    </span>
+
+                    <strong>
+                        {{ results[0]['economic_status'] }}
+                    </strong>
+
+                    <p>
+                        Selected economic group.
+                    </p>
+
+                </div>
+
+
+                <div class="explore-stat-card">
+
+                    <span class="stat-label">
+                        COUNTRIES
+                    </span>
+
+                    <strong>
+                        {{ results|length }}
+                    </strong>
+
+                    <p>
+                        Countries with available
+                        infection data.
+                    </p>
+
+                </div>
+
+
+                <div class="explore-stat-card">
+
+                    <span class="stat-label">
+                        INFECTION TYPE
+                    </span>
+
+                    <strong>
+                        {{ results[0]['infection_type'] }}
+                    </strong>
+
+                    <p>
+                        Selected infection.
+                    </p>
+
+                </div>
+
+
+                <div class="explore-stat-card">
+
+                    <span class="stat-label">
+                        YEAR
+                    </span>
+
+                    <strong>
+                        {{ results[0]['year'] }}
+                    </strong>
+
+                    <p>
+                        Reporting year.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- LEVEL 2B COUNTRY RESULTS -->
+
+            <div class="infection-results">
+
+                <div class="infection-result-header">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            COUNTRY RESULTS
+                        </p>
+
+                        <h2>
+                            Reported Infection Cases
+                        </h2>
+
+                        <p>
+                            Results are organised by country
+                            within the selected economic status.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="infection-grid">
+
+                    {% for result in results %}
+
+                    <div class="infection-card">
+
+                        <div class="infection-badge">
+
+                            {{ result['economic_status'] }}
+
+                        </div>
+
+
+                        <h3>
+                            {{ result['country'] }}
+                        </h3>
+
+
+                        <p class="infection-type">
+
+                            {{ result['infection_type'] }}
+
+                            ·
+
+                            {{ result['year'] }}
+
+                        </p>
+
+
+                        <div class="infection-cases">
+
+                            <span>
+                                REPORTED CASES
+                            </span>
+
+                            <strong>
+
+                                {{ "{:,}".format(result['cases']) }}
+
+                            </strong>
+
+                        </div>
+
+
+                        <p style="margin-top: 15px; color: #60777C;">
+
+                            Population:
+
+                            {{ "{:,}".format(
+                                result['population']|int
+                            ) }}
+
+                        </p>
+
+
+                        <p style="margin-top: 8px; color: #60777C;">
+
+                            Infection rate:
+
+                            <strong>
+
+                                {{ result['infection_rate'] }}
+
+                            </strong>
+
+                            per 100,000
+
+                        </p>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <!-- LEVEL 2B SUMMARY -->
+
+            <div class="explore-insight">
+
+                <p class="insight-label">
+                    DATA SUMMARY
+                </p>
+
+                <p>
+
+                    The selected
+
+                    <strong>
+                        {{ results[0]['economic_status'] }}
+                    </strong>
+
+                    economic group contains
+
+                    <strong>
+                        {{ results|length }}
+                    </strong>
+
+                    countries with available
+
+                    <strong>
+                        {{ results[0]['infection_type'] }}
+                    </strong>
+
+                    infection data for
+
+                    <strong>
+                        {{ results[0]['year'] }}
+                    </strong>.
+
+                    The results combine information from
+                    the country, economy, infection type,
+                    infection data and population tables.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% elif selected_economy
+            and selected_infection
+            and selected_year %}
+
+        <div class="result-card">
+
+            <h2>
+                No infection data found
+            </h2>
+
+            <p>
+
+                No data was found for the selected
+                economic status, infection type and year.
+
+                Try selecting different options.
+
+            </p>
+
+        </div>
+
+        {% endif %}
+
+
+
+        <!-- =====================================================
+             LEVEL 3B
+             ===================================================== -->
+
+        <div class="infection-section level-three-section">
+
+            <div class="page-header">
+
+                <p class="eyebrow">
+                    LEVEL 3B
+                </p>
+
+                <h2>
+                    Countries Above the Global Infection Rate
+                </h2>
+
+                <p>
+                    Select an infection type and year to calculate
+                    the global infection rate and identify countries
+                    with a higher infection rate.
+                </p>
+
+            </div>
+
+
+            <!-- LEVEL 3B SEARCH -->
+
+            <div class="search-card">
+
+                <form
+                    method="GET"
+                    action="{{ url_for('infections') }}"
+                >
+
+                    <!-- Infection -->
+
+                    <div class="form-group">
+
+                        <label for="global_infection">
+                            Infection Type
+                        </label>
+
+                        <select
+                            id="global_infection"
+                            name="global_infection"
+                            required
+                        >
+
+                            <option value="">
+                                Select infection type
+                            </option>
+
+                            {% for infection in infection_types %}
+
+                            <option
+                                value="{{ infection['id'] }}"
+                                {% if selected_global_infection == infection['id'] %}
+                                selected
+                                {% endif %}
+                            >
+
+                                {{ infection['description'] }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Year -->
+
+                    <div class="form-group">
+
+                        <label for="global_year">
+                            Year
+                        </label>
+
+                        <select
+                            id="global_year"
+                            name="global_year"
+                            required
+                        >
+
+                            <option value="">
+                                Select year
+                            </option>
+
+                            {% for year_item in years %}
+
+                            <option
+                                value="{{ year_item['year'] }}"
+                                {% if selected_global_year == year_item['year']|string %}
+                                selected
+                                {% endif %}
+                            >
+
+                                {{ year_item['year'] }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+
+                        Calculate Global Rate
+
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <!-- LEVEL 3B RESULTS -->
+
+            {% if global_rate is not none %}
+
+            <div class="explore-result">
+
+                <div class="explore-result-header">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            LEVEL 3B RESULTS
+                        </p>
+
+                        <h2>
+                            Global Infection Rate
+                        </h2>
+
+                        <p class="result-location">
+
+                            {% for infection in infection_types %}
+
+                                {% if infection['id'] == selected_global_infection %}
+
+                                    {{ infection['description'] }}
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                            ·
+
+                            {{ selected_global_year }}
+
+                        </p>
+
+                    </div>
+
+
+                    <div class="coverage-badge">
+
+                        {{ global_rate }}
+
+                        per 100,000
+
+                    </div>
+
+                </div>
+
+
+                <!-- GLOBAL STATISTICS -->
+
+                <div class="explore-stat-grid">
+
+                    <div class="explore-stat-card">
+
+                        <span class="stat-label">
+                            GLOBAL RATE
+                        </span>
+
+                        <strong>
+                            {{ global_rate }}
+                        </strong>
+
+                        <p>
+                            Cases per 100,000 people.
+                        </p>
+
+                    </div>
+
+
+                    <div class="explore-stat-card">
+
+                        <span class="stat-label">
+                            ABOVE GLOBAL RATE
+                        </span>
+
+                        <strong>
+                            {{ countries_above_global }}
+                        </strong>
+
+                        <p>
+                            Countries above the calculated
+                            global rate.
+                        </p>
+
+                    </div>
+
+
+                    <div class="explore-stat-card">
+
+                        <span class="stat-label">
+                            YEAR
+                        </span>
+
+                        <strong>
+                            {{ selected_global_year }}
+                        </strong>
+
+                        <p>
+                            Selected reporting year.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- COUNTRIES ABOVE GLOBAL RATE -->
+
+                {% if global_results %}
+
+                <div class="infection-results">
+
+                    <div class="infection-result-header">
+
+                        <div>
+
+                            <p class="eyebrow">
+                                ABOVE GLOBAL RATE
+                            </p>
+
+                            <h2>
+                                Countries Above Average
+                            </h2>
+
+                            <p>
+                                Countries are sorted from the
+                                highest infection rate to the lowest.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="infection-grid">
+
+                        {% for result in global_results %}
+
+                        <div class="infection-card">
+
+                            <div class="infection-badge">
+
+                                ABOVE GLOBAL RATE
+
+                            </div>
+
+
+                            <h3>
+                                {{ result['country'] }}
+                            </h3>
+
+
+                            <p class="infection-type">
+
+                                {{ result['economic_status'] }}
+
+                            </p>
+
+
+                            <div class="infection-cases">
+
+                                <span>
+                                    INFECTION RATE
+                                </span>
+
+                                <strong>
+                                    {{ result['infection_rate'] }}
+                                </strong>
+
+                            </div>
+
+
+                            <p style="margin-top: 15px; color: #60777C;">
+
+                                {{ "{:,}".format(result['cases']) }}
+
+                                reported cases
+
+                            </p>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                {% else %}
+
+                <div class="infection-empty">
+
+                    <h2>
+                        No countries above the global rate
+                    </h2>
+
+                    <p>
+
+                        No countries were found with an infection
+                        rate higher than the calculated global rate.
+
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- LEVEL 3B SUMMARY -->
+
+                <div class="explore-insight">
+
+                    <p class="insight-label">
+                        DATA SUMMARY
+                    </p>
+
+                    <p>
+
+                        For
+
+                        <strong>
+                            {{ selected_global_year }}
+                        </strong>,
+
+                        the global infection rate for the selected
+                        infection type is
+
+                        <strong>
+                            {{ global_rate }}
+                        </strong>
+
+                        cases per 100,000 people.
+
+                        The analysis identified
+
+                        <strong>
+                            {{ countries_above_global }}
+                        </strong>
+
+                        countries with rates above this value.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+```

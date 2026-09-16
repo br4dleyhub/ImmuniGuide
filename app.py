@@ -7,6 +7,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+
 print("====================================================")
 print("THIS IS MY APP.PY")
 print("APP FILE:", __file__)
@@ -62,9 +63,7 @@ def get_news():
 
         articles = []
 
-        # -------------------------------------------------
-        # WHO API may return articles inside a "value" object
-        # -------------------------------------------------
+        # WHO API may return articles inside "value"
 
         if isinstance(data, dict):
 
@@ -73,15 +72,12 @@ def get_news():
                 []
             )
 
-        # Make sure data is a list
-
         if not isinstance(data, list):
 
             data = []
 
-        # -------------------------------------------------
-        # Sort WHO articles by REAL publication date
-        # -------------------------------------------------
+
+        # Sort articles by the real publication date
 
         def get_date(item):
 
@@ -108,9 +104,7 @@ def get_news():
         )
 
 
-        # -------------------------------------------------
-        # DEBUG: Show sorted WHO articles
-        # -------------------------------------------------
+        # Show the newest articles in the terminal
 
         print("SORTED WHO ARTICLES:")
 
@@ -123,15 +117,9 @@ def get_news():
             )
 
 
-        # -------------------------------------------------
-        # Process the 10 newest articles
-        # -------------------------------------------------
+        # Get the 10 newest articles
 
         for item in data[:10]:
-
-            # -------------------------------------------------
-            # Article title
-            # -------------------------------------------------
 
             title = item.get(
                 "Title",
@@ -139,18 +127,13 @@ def get_news():
             )
 
 
-            # -------------------------------------------------
-            # Article URL
-            # -------------------------------------------------
-
             link = item.get(
                 "ItemDefaultUrl",
                 "#"
             )
 
 
-            # Convert relative WHO links
-            # into complete URLs.
+            # Convert WHO relative links
 
             if link and link.startswith("/"):
 
@@ -160,16 +143,10 @@ def get_news():
                 )
 
 
-            # Skip articles without a usable URL.
-
             if not link or link == "#":
 
                 continue
 
-
-            # -------------------------------------------------
-            # Publication date
-            # -------------------------------------------------
 
             published = item.get(
                 "FormatedDate",
@@ -177,19 +154,13 @@ def get_news():
             )
 
 
-            # -------------------------------------------------
-            # WHO news type
-            # -------------------------------------------------
-
             news_type = item.get(
                 "NewsType",
                 "WHO NEWS"
             )
 
 
-            # -------------------------------------------------
-            # Determine article category
-            # -------------------------------------------------
+            # Work out a simple category
 
             title_lower = title.lower()
 
@@ -260,10 +231,6 @@ def get_news():
                 category = "HEALTH NEWS"
 
 
-            # -------------------------------------------------
-            # Add article
-            # -------------------------------------------------
-
             articles.append({
 
                 "title": title,
@@ -299,8 +266,73 @@ def get_news():
 @app.route("/")
 def home():
 
+    conn = get_db_connection()
+
+    mission = conn.execute("""
+        SELECT title, content
+        FROM AboutInfo
+        WHERE info_type = 'mission'
+        LIMIT 1
+    """).fetchone()
+
+    personas = conn.execute("""
+        SELECT title, content
+        FROM AboutInfo
+        WHERE info_type = 'persona'
+    """).fetchall()
+
+    team = conn.execute("""
+        SELECT title, content
+        FROM AboutInfo
+        WHERE info_type = 'team'
+    """).fetchall()
+
+    facts = conn.execute("""
+        SELECT title, content
+        FROM AboutInfo
+        WHERE info_type = 'fact'
+    """).fetchall()
+
+    teamwork = conn.execute("""
+        SELECT title, content
+        FROM AboutInfo
+        WHERE info_type = 'teamwork'
+        LIMIT 1
+    """).fetchone()
+
+    countries = conn.execute("""
+        SELECT COUNT(*)
+        FROM Country
+    """).fetchone()[0]
+
+    years = conn.execute("""
+        SELECT COUNT(DISTINCT YearID)
+        FROM YearDate
+    """).fetchone()[0]
+
+    antigens = conn.execute("""
+        SELECT COUNT(*)
+        FROM Antigen
+    """).fetchone()[0]
+
+    infection_types = conn.execute("""
+        SELECT COUNT(*)
+        FROM Infection_Type
+    """).fetchone()[0]
+
+    conn.close()
+
     return render_template(
-        "home.html"
+        "home.html",
+        mission=mission,
+        personas=personas,
+        team=team,
+        facts=facts,
+        teamwork=teamwork,
+        countries=countries,
+        years=years,
+        antigens=antigens,
+        infection_types=infection_types
     )
 
 
@@ -311,208 +343,406 @@ def home():
 @app.route("/explore")
 def explore():
 
-    country = request.args.get(
-        "country"
-    )
+    conn = get_db_connection()
 
-    year = request.args.get(
-        "year"
-    )
+    # =========================================================
+    # GET FILTERS
+    # =========================================================
 
-    antigen = request.args.get(
-        "antigen"
-    )
+    region = request.args.get("region", "").strip()
+    country = request.args.get("country", "").strip()
+    year = request.args.get("year", "").strip()
+    antigen = request.args.get("antigen", "").strip()
 
-    # PER is currently used as the default
-    # vaccination information type.
+    # =========================================================
+    # DEFAULT VALUES
+    # =========================================================
 
-    inf_type = request.args.get(
-        "inf_type",
-        "PER"
-    )
-
-
-    connection = get_db_connection()
-
-
-    # ---------------------------------------------------------
-    # Get selected vaccination result
-    # ---------------------------------------------------------
-
-    result = connection.execute(
-        """
-        SELECT
-            Vaccination.*,
-            Antigen.name AS vaccine_name,
-            Country.name AS country_name
-        FROM Vaccination
-        JOIN Antigen
-            ON Vaccination.antigen = Antigen.AntigenID
-        JOIN Country
-            ON Vaccination.country = Country.CountryID
-        WHERE Vaccination.country = ?
-          AND Vaccination.year = ?
-          AND Vaccination.antigen = ?
-          AND Vaccination.inf_type = ?
-        """,
-        (
-            country,
-            year,
-            antigen,
-            inf_type
-        )
-    ).fetchone()
-
+    result = None
 
     coverage_level = None
 
     people_per_100 = None
-
     target_population = None
-
     doses_administered = None
 
+    regional_summary = None
 
-    # ---------------------------------------------------------
-    # Process selected result
-    # ---------------------------------------------------------
+    regional_coverage_level = None
+    herd_immunity_status = None
 
-    if result:
+    countries_90 = []
+    countries_90_percentage = None
 
-        coverage_value = result["coverage"]
+    # =========================================================
+    # REGIONS
+    # =========================================================
 
+    regions = conn.execute("""
+        SELECT
+            RegionID,
+            region
+        FROM Region
+        ORDER BY region
+    """).fetchall()
 
-        # -----------------------------------------------------
-        # Safely convert coverage
-        # -----------------------------------------------------
+    # =========================================================
+    # COUNTRIES
+    #
+    # If a region is selected, only show countries
+    # belonging to that region.
+    # =========================================================
 
-        try:
+    if region:
 
-            if (
-                coverage_value is not None
-                and str(coverage_value).strip() != ""
-            ):
+        countries = conn.execute("""
+            SELECT
+                CountryID,
+                name,
+                region,
+                economy
+            FROM Country
+            WHERE region = ?
+            ORDER BY name
+        """, (region,)).fetchall()
 
-                coverage = float(
-                    coverage_value
-                )
+    else:
 
-            else:
+        countries = conn.execute("""
+            SELECT
+                CountryID,
+                name,
+                region,
+                economy
+            FROM Country
+            ORDER BY name
+        """).fetchall()
 
-                coverage = None
+    # =========================================================
+    # YEARS
+    # =========================================================
 
-
-        except (ValueError, TypeError):
-
-            coverage = None
-
-
-        # -----------------------------------------------------
-        # Target population
-        # -----------------------------------------------------
-
-        try:
-
-            target_population = round(
-                float(result["target_num"])
-            )
-
-        except (ValueError, TypeError):
-
-            target_population = None
-
-
-        # -----------------------------------------------------
-        # Doses administered
-        # -----------------------------------------------------
-
-        try:
-
-            doses_administered = round(
-                float(result["doses"])
-            )
-
-        except (ValueError, TypeError):
-
-            doses_administered = None
-
-
-        # -----------------------------------------------------
-        # Coverage level
-        # -----------------------------------------------------
-
-        if coverage is not None:
-
-            if coverage >= 90:
-
-                coverage_level = "Very High Coverage"
-
-
-            elif coverage >= 75:
-
-                coverage_level = "High Coverage"
-
-
-            elif coverage >= 50:
-
-                coverage_level = "Moderate Coverage"
-
-
-            else:
-
-                coverage_level = "Low Coverage"
-
-
-            people_per_100 = round(
-                coverage
-            )
-
-
-    # ---------------------------------------------------------
-    # Get countries
-    # ---------------------------------------------------------
-
-    countries = connection.execute(
-        """
-        SELECT CountryID, name
-        FROM Country
-        ORDER BY name
-        """
-    ).fetchall()
-
-
-    # ---------------------------------------------------------
-    # Get years
-    # ---------------------------------------------------------
-
-    years = connection.execute(
-        """
+    years = conn.execute("""
         SELECT YearID
         FROM YearDate
         ORDER BY YearID DESC
-        """
-    ).fetchall()
+    """).fetchall()
 
+    # =========================================================
+    # ANTIGENS
+    # =========================================================
 
-    # ---------------------------------------------------------
-    # Get vaccines
-    # ---------------------------------------------------------
-
-    antigens = connection.execute(
-        """
-        SELECT AntigenID, name
+    antigens = conn.execute("""
+        SELECT
+            AntigenID,
+            name
         FROM Antigen
         ORDER BY name
+    """).fetchall()
+
+    # =========================================================
+    # COUNTRY RESULT
+    #
+    # Country + Year + Antigen
+    # =========================================================
+
+    if country and year and antigen:
+
+        query = """
+            SELECT
+                Vaccination.*,
+                Antigen.name AS vaccine_name,
+                Country.name AS country_name
+            FROM Vaccination
+
+            JOIN Antigen
+                ON Vaccination.antigen = Antigen.AntigenID
+
+            JOIN Country
+                ON Vaccination.country = Country.CountryID
+
+            WHERE Vaccination.country = ?
+              AND Vaccination.year = ?
+              AND Vaccination.antigen = ?
         """
-    ).fetchall()
 
+        params = [
+            country,
+            year,
+            antigen
+        ]
 
-    connection.close()
+        # Make sure the country belongs to the
+        # selected region.
 
+        if region:
+
+            query += """
+                AND Country.region = ?
+            """
+
+            params.append(region)
+
+        result = conn.execute(
+            query,
+            params
+        ).fetchone()
+
+        # =====================================================
+        # COUNTRY CALCULATIONS
+        # =====================================================
+
+        if result:
+
+            # Coverage
+
+            try:
+
+                people_per_100 = float(
+                    result["coverage"]
+                )
+
+                people_per_100 = round(
+                    people_per_100,
+                    2
+                )
+
+            except (TypeError, ValueError):
+
+                people_per_100 = None
+
+            # Target population
+
+            try:
+
+                target_population = int(
+                    float(
+                        result["target_num"]
+                    )
+                )
+
+            except (TypeError, ValueError):
+
+                target_population = None
+
+            # Doses administered
+
+            try:
+
+                doses_administered = int(
+                    float(
+                        result["doses"]
+                    )
+                )
+
+            except (TypeError, ValueError):
+
+                doses_administered = None
+
+            # Coverage classification
+
+            if people_per_100 is not None:
+
+                if people_per_100 >= 90:
+
+                    coverage_level = "Very High"
+
+                elif people_per_100 >= 75:
+
+                    coverage_level = "High"
+
+                elif people_per_100 >= 50:
+
+                    coverage_level = "Moderate"
+
+                else:
+
+                    coverage_level = "Low"
+
+    # =========================================================
+    # REGIONAL RESULT
+    #
+    # Region + Year + Antigen
+    # =========================================================
+
+    if region and year and antigen:
+
+        regional_summary = conn.execute("""
+            SELECT
+
+                Region.region AS region_name,
+
+                YearDate.YearID AS year,
+
+                Antigen.name AS vaccine_name,
+
+                COUNT(Vaccination.country) AS country_count,
+
+                ROUND(
+                    AVG(
+                        CAST(
+                            Vaccination.coverage AS REAL
+                        )
+                    ),
+                    2
+                ) AS average_coverage,
+
+                SUM(
+                    CASE
+                        WHEN CAST(
+                            Vaccination.coverage AS REAL
+                        ) >= 90
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS countries_90
+
+            FROM Vaccination
+
+            JOIN Country
+                ON Vaccination.country = Country.CountryID
+
+            JOIN Region
+                ON Country.region = Region.RegionID
+
+            JOIN Antigen
+                ON Vaccination.antigen = Antigen.AntigenID
+
+            JOIN YearDate
+                ON Vaccination.year = YearDate.YearID
+
+            WHERE Country.region = ?
+              AND Vaccination.year = ?
+              AND Vaccination.antigen = ?
+
+            GROUP BY
+
+                Region.region,
+                YearDate.YearID,
+                Antigen.name
+
+        """, (
+            region,
+            year,
+            antigen
+        )).fetchone()
+
+        # =====================================================
+        # REGIONAL COVERAGE / HERD-IMMUNITY LEVEL
+        # =====================================================
+
+        if regional_summary:
+
+            average_coverage = regional_summary[
+                "average_coverage"
+            ]
+
+            if average_coverage is not None:
+
+                if average_coverage >= 90:
+
+                    regional_coverage_level = "Very High"
+
+                    herd_immunity_status = (
+                        "90% target reached"
+                    )
+
+                elif average_coverage >= 75:
+
+                    regional_coverage_level = "High"
+
+                    herd_immunity_status = (
+                        "Below 90% target"
+                    )
+
+                elif average_coverage >= 50:
+
+                    regional_coverage_level = "Moderate"
+
+                    herd_immunity_status = (
+                        "Below 90% target"
+                    )
+
+                else:
+
+                    regional_coverage_level = "Low"
+
+                    herd_immunity_status = (
+                        "Below 90% target"
+                    )
+
+            # =================================================
+            # CALCULATE 90% PERCENTAGE
+            # =================================================
+
+            total = regional_summary["country_count"]
+
+            reached_90 = regional_summary["countries_90"]
+
+            if total and reached_90 is not None:
+
+                countries_90_percentage = round(
+                    (
+                        reached_90 / total
+                    ) * 100,
+                    2
+                )
+
+        # =====================================================
+        # COUNTRIES REACHING 90%
+        # =====================================================
+
+        if regional_summary:
+
+            countries_90 = conn.execute("""
+                SELECT
+
+                    Country.name AS country_name,
+
+                    Vaccination.coverage
+
+                FROM Vaccination
+
+                JOIN Country
+                    ON Vaccination.country =
+                       Country.CountryID
+
+                WHERE Country.region = ?
+
+                  AND Vaccination.year = ?
+
+                  AND Vaccination.antigen = ?
+
+                  AND CAST(
+                        Vaccination.coverage AS REAL
+                      ) >= 90
+
+                ORDER BY
+                    CAST(
+                        Vaccination.coverage AS REAL
+                    ) DESC
+
+            """, (
+                region,
+                year,
+                antigen
+            )).fetchall()
+
+    # =========================================================
+    # CLOSE DATABASE
+    # =========================================================
+
+    conn.close()
+
+    # =========================================================
+    # RENDER PAGE
+    # =========================================================
 
     return render_template(
 
         "explore.html",
+
+        regions=regions,
 
         countries=countries,
 
@@ -528,10 +758,234 @@ def explore():
 
         target_population=target_population,
 
-        doses_administered=doses_administered
+        doses_administered=doses_administered,
+
+        regional_summary=regional_summary,
+
+        regional_coverage_level=regional_coverage_level,
+
+        herd_immunity_status=herd_immunity_status,
+
+        countries_90=countries_90,
+
+        countries_90_percentage=countries_90_percentage
 
     )
 
+
+@app.route("/infections")
+def infections():
+
+    conn = get_db_connection()
+
+    # Level 2B filters
+    economic_status = request.args.get("economy", "")
+    infection_type = request.args.get("infection", "")
+    year = request.args.get("year", "")
+
+    # Level 3B filters
+    global_infection = request.args.get("global_infection", "")
+    global_year = request.args.get("global_year", "")
+
+    # Economic status options
+    economies = conn.execute("""
+        SELECT economyID, phase
+        FROM Economy
+        ORDER BY economyID
+    """).fetchall()
+
+    # Infection type options
+    infection_types = conn.execute("""
+        SELECT id, description
+        FROM Infection_Type
+        ORDER BY description
+    """).fetchall()
+
+    # Available years
+    years = conn.execute("""
+        SELECT DISTINCT year
+        FROM InfectionData
+        ORDER BY year DESC
+    """).fetchall()
+
+
+    # =========================================================
+    # LEVEL 2B
+    # Infection data by economic status
+    # =========================================================
+
+    results = []
+
+    if economic_status and infection_type and year:
+
+        results = conn.execute("""
+            SELECT
+                c.name AS country,
+                e.phase AS economic_status,
+                it.description AS infection_type,
+                i.year,
+                i.cases,
+                cp.population,
+
+                ROUND(
+                    (i.cases * 100000.0) / cp.population,
+                    2
+                ) AS infection_rate
+
+            FROM InfectionData i
+
+            JOIN Country c
+                ON i.country = c.CountryID
+
+            JOIN Economy e
+                ON c.economy = e.economyID
+
+            JOIN Infection_Type it
+                ON i.inf_type = it.id
+
+            JOIN CountryPopulation cp
+                ON i.country = cp.country
+                AND i.year = cp.year
+
+            WHERE e.economyID = ?
+              AND it.id = ?
+              AND i.year = ?
+              AND cp.population > 0
+
+            ORDER BY i.cases DESC
+        """, (
+            economic_status,
+            infection_type,
+            year
+        )).fetchall()
+
+
+    # =========================================================
+    # LEVEL 3B
+    # Global infection rate
+    # =========================================================
+
+    global_results = []
+
+    global_rate = None
+
+    countries_above_global = 0
+
+    if global_infection and global_year:
+
+        global_data = conn.execute("""
+            SELECT
+                SUM(i.cases) AS total_cases,
+                SUM(cp.population) AS total_population
+
+            FROM InfectionData i
+
+            JOIN CountryPopulation cp
+                ON i.country = cp.country
+                AND i.year = cp.year
+
+            WHERE i.inf_type = ?
+              AND i.year = ?
+              AND cp.population > 0
+        """, (
+            global_infection,
+            global_year
+        )).fetchone()
+
+
+        if global_data["total_population"]:
+
+            global_rate = round(
+                (
+                    global_data["total_cases"]
+                    * 100000.0
+                )
+                / global_data["total_population"],
+                2
+            )
+
+
+            # Find countries above global rate
+            global_results = conn.execute("""
+                SELECT
+                    c.name AS country,
+                    e.phase AS economic_status,
+                    it.description AS infection_type,
+                    i.year,
+                    i.cases,
+                    cp.population,
+
+                    ROUND(
+                        (i.cases * 100000.0) / cp.population,
+                        2
+                    ) AS infection_rate
+
+                FROM InfectionData i
+
+                JOIN Country c
+                    ON i.country = c.CountryID
+
+                JOIN Economy e
+                    ON c.economy = e.economyID
+
+                JOIN Infection_Type it
+                    ON i.inf_type = it.id
+
+                JOIN CountryPopulation cp
+                    ON i.country = cp.country
+                    AND i.year = cp.year
+
+                WHERE i.inf_type = ?
+                  AND i.year = ?
+                  AND cp.population > 0
+
+                  AND (
+                        (i.cases * 100000.0) / cp.population
+                      ) > ?
+
+                ORDER BY infection_rate DESC
+            """, (
+                global_infection,
+                global_year,
+                global_rate
+            )).fetchall()
+
+
+            countries_above_global = len(global_results)
+
+
+    conn.close()
+
+
+    return render_template(
+        "infections.html",
+
+        economies=economies,
+
+        infection_types=infection_types,
+
+        years=years,
+
+        # Level 2B
+        results=results,
+
+        selected_economy=economic_status,
+
+        selected_infection=infection_type,
+
+        selected_year=year,
+
+        # Level 3B
+        global_results=global_results,
+
+        global_rate=global_rate,
+
+        countries_above_global=countries_above_global,
+
+        selected_global_infection=global_infection,
+
+        selected_global_year=global_year
+    )
 
 # =========================================================
 # COMPARE
@@ -560,43 +1014,31 @@ def compare():
     connection = get_db_connection()
 
 
-    # ---------------------------------------------------------
     # Get countries
-    # ---------------------------------------------------------
 
-    countries = connection.execute(
-        """
+    countries = connection.execute("""
         SELECT CountryID, name
         FROM Country
         ORDER BY name
-        """
-    ).fetchall()
+    """).fetchall()
 
 
-    # ---------------------------------------------------------
     # Get vaccines
-    # ---------------------------------------------------------
 
-    antigens = connection.execute(
-        """
+    antigens = connection.execute("""
         SELECT AntigenID, name
         FROM Antigen
         ORDER BY name
-        """
-    ).fetchall()
+    """).fetchall()
 
 
-    # ---------------------------------------------------------
     # Get years
-    # ---------------------------------------------------------
 
-    years = connection.execute(
-        """
+    years = connection.execute("""
         SELECT YearID
         FROM YearDate
         ORDER BY YearID DESC
-        """
-    ).fetchall()
+    """).fetchall()
 
 
     result1 = None
@@ -610,105 +1052,76 @@ def compare():
     comparison_status = None
 
 
-    # ---------------------------------------------------------
     # Get both years
-    # ---------------------------------------------------------
 
     if country and antigen and year1 and year2:
 
-        result1 = connection.execute(
-            """
+        result1 = connection.execute("""
             SELECT *
             FROM Vaccination
             WHERE country = ?
               AND antigen = ?
               AND year = ?
               AND inf_type = ?
-            """,
-            (
-                country,
-                antigen,
-                year1,
-                "PER"
-            )
-        ).fetchone()
+        """, (
+            country,
+            antigen,
+            year1,
+            "PER"
+        )).fetchone()
 
 
-        result2 = connection.execute(
-            """
+        result2 = connection.execute("""
             SELECT *
             FROM Vaccination
             WHERE country = ?
               AND antigen = ?
               AND year = ?
               AND inf_type = ?
-            """,
-            (
-                country,
-                antigen,
-                year2,
-                "PER"
-            )
-        ).fetchone()
+        """, (
+            country,
+            antigen,
+            year2,
+            "PER"
+        )).fetchone()
 
 
-    # ---------------------------------------------------------
-    # Calculate coverage change
-    # ---------------------------------------------------------
+    # Calculate change
 
     if result1 and result2:
 
         try:
 
-            coverage1_value = result1["coverage"]
+            coverage1 = float(
+                result1["coverage"]
+            )
 
-            coverage2_value = result2["coverage"]
+            coverage2 = float(
+                result2["coverage"]
+            )
 
-
-            if (
-                coverage1_value is not None
-                and str(coverage1_value).strip() != ""
-                and coverage2_value is not None
-                and str(coverage2_value).strip() != ""
-            ):
-
-                coverage1 = float(
-                    coverage1_value
-                )
-
-                coverage2 = float(
-                    coverage2_value
-                )
-
-
-                coverage_change = round(
-                    coverage2 - coverage1,
-                    2
-                )
-
+            coverage_change = round(
+                coverage2 - coverage1,
+                2
+            )
 
         except (ValueError, TypeError):
 
             coverage_change = None
 
 
-    # ---------------------------------------------------------
     # Create comparison message
-    # ---------------------------------------------------------
 
     if coverage_change is not None:
 
         if coverage_change > 0:
 
             comparison_message = (
-
                 f"Coverage was "
                 f"{abs(coverage_change)} "
                 f"percentage points higher in "
                 f"{year2} than in {year1}."
-
             )
-
 
             comparison_status = (
                 "Coverage increased"
@@ -718,14 +1131,11 @@ def compare():
         elif coverage_change < 0:
 
             comparison_message = (
-
                 f"Coverage was "
                 f"{abs(coverage_change)} "
                 f"percentage points lower in "
                 f"{year2} than in {year1}."
-
             )
-
 
             comparison_status = (
                 "Coverage decreased"
@@ -735,12 +1145,9 @@ def compare():
         else:
 
             comparison_message = (
-
                 f"Coverage was the same in "
                 f"{year1} and {year2}."
-
             )
-
 
             comparison_status = (
                 "No change in coverage"
@@ -784,196 +1191,93 @@ def compare():
 @app.route("/trends")
 def trends():
 
-    country = request.args.get(
-        "country"
-    )
+    conn = get_db_connection()
 
-    antigen = request.args.get(
-        "antigen"
-    )
+    start_year = request.args.get("start_year", "")
+    end_year = request.args.get("end_year", "")
+    antigen = request.args.get("antigen", "")
+    limit = request.args.get("limit", "10")
 
+    years = conn.execute("""
+        SELECT DISTINCT YearID
+        FROM YearDate
+        ORDER BY YearID DESC
+    """).fetchall()
 
-    connection = get_db_connection()
-
-
-    # ---------------------------------------------------------
-    # Get countries
-    # ---------------------------------------------------------
-
-    countries = connection.execute(
-        """
-        SELECT CountryID, name
-        FROM Country
-        ORDER BY name
-        """
-    ).fetchall()
-
-
-    # ---------------------------------------------------------
-    # Get vaccines
-    # ---------------------------------------------------------
-
-    antigens = connection.execute(
-        """
+    antigens = conn.execute("""
         SELECT AntigenID, name
         FROM Antigen
         ORDER BY name
-        """
-    ).fetchall()
+    """).fetchall()
 
+    results = []
 
-    trend_data = None
+    total_countries = 0
 
-    first_coverage = None
+    # Check that the selected number is valid
 
-    latest_coverage = None
+    try:
 
-    coverage_change = None
+        limit = int(limit)
 
-    highest = None
+        if limit not in [5, 10, 20, 50]:
 
-    lowest = None
+            limit = 10
 
+    except ValueError:
 
-    # ---------------------------------------------------------
-    # Get trend data
-    # ---------------------------------------------------------
+        limit = 10
 
-    if country and antigen:
+    if start_year and end_year and antigen:
 
-        rows = connection.execute(
-            """
+        results = conn.execute("""
             SELECT
-                year,
-                coverage
-            FROM Vaccination
-            WHERE country = ?
-              AND antigen = ?
-              AND inf_type = ?
-            ORDER BY year
-            """,
-            (
-                country,
-                antigen,
-                "PER"
-            )
-        ).fetchall()
+                c.name AS country,
+                start_data.coverage AS start_coverage,
+                end_data.coverage AS end_coverage,
+                ROUND(
+                    end_data.coverage - start_data.coverage,
+                    2
+                ) AS improvement
+            FROM Vaccination start_data
 
+            JOIN Vaccination end_data
+                ON start_data.country = end_data.country
+                AND start_data.antigen = end_data.antigen
 
-        trend_data = []
+            JOIN Country c
+                ON start_data.country = c.CountryID
 
+            WHERE start_data.year = ?
+              AND end_data.year = ?
+              AND start_data.antigen = ?
+              AND start_data.coverage IS NOT NULL
+              AND end_data.coverage IS NOT NULL
 
-        for row in rows:
+            ORDER BY improvement DESC
 
-            coverage = row["coverage"]
+            LIMIT ?
+        """, (
+            start_year,
+            end_year,
+            antigen,
+            limit
+        )).fetchall()
 
+        total_countries = len(results)
 
-            # -------------------------------------------------
-            # Handle empty / invalid coverage values
-            # -------------------------------------------------
-
-            try:
-
-                if (
-                    coverage is None
-                    or str(coverage).strip() == ""
-                ):
-
-                    continue
-
-
-                numeric_coverage = float(
-                    coverage
-                )
-
-
-            except (ValueError, TypeError):
-
-                continue
-
-
-            # -------------------------------------------------
-            # Add valid data
-            # -------------------------------------------------
-
-            trend_data.append({
-
-                "year": row["year"],
-
-                "coverage": numeric_coverage,
-
-                "width": numeric_coverage
-
-            })
-
-
-        # -----------------------------------------------------
-        # Calculate summary statistics
-        # -----------------------------------------------------
-
-        if trend_data:
-
-            first_coverage = (
-                trend_data[0]["coverage"]
-            )
-
-
-            latest_coverage = (
-                trend_data[-1]["coverage"]
-            )
-
-
-            coverage_change = round(
-
-                latest_coverage
-                - first_coverage,
-
-                2
-
-            )
-
-
-            highest = max(
-
-                trend_data,
-
-                key=lambda x: x["coverage"]
-
-            )
-
-
-            lowest = min(
-
-                trend_data,
-
-                key=lambda x: x["coverage"]
-
-            )
-
-
-    connection.close()
-
+    conn.close()
 
     return render_template(
-
         "trends.html",
-
-        countries=countries,
-
+        years=years,
         antigens=antigens,
-
-        trend_data=trend_data,
-
-        first_coverage=first_coverage,
-
-        latest_coverage=latest_coverage,
-
-        coverage_change=coverage_change,
-
-        highest=highest,
-
-        lowest=lowest
-
+        results=results,
+        total_countries=total_countries,
+        selected_start_year=start_year,
+        selected_end_year=end_year,
+        selected_antigen=antigen,
+        selected_limit=limit
     )
 
 

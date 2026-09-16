@@ -107,6 +107,101 @@ Home | ImmuniGuide
 
 </section>
 
+<!-- DATABASE SNAPSHOT -->
+
+<section class="home-features">
+
+    <div class="home-section-heading">
+
+        <p class="eyebrow">
+            DATA SNAPSHOT
+        </p>
+
+        <h2>
+            What's inside ImmuniGuide?
+        </h2>
+
+        <p>
+            The database brings together vaccination and
+            infection information across countries and years.
+        </p>
+
+    </div>
+
+    <div class="features">
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                01
+            </div>
+
+            <h3>
+                {{ countries }}
+            </h3>
+
+            <p>
+                Countries represented in the
+                ImmuniGuide database.
+            </p>
+
+        </div>
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                02
+            </div>
+
+            <h3>
+                {{ years }}
+            </h3>
+
+            <p>
+                Years of data available
+                for analysis.
+            </p>
+
+        </div>
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                03
+            </div>
+
+            <h3>
+                {{ antigens }}
+            </h3>
+
+            <p>
+                Antigens available for
+                vaccination analysis.
+            </p>
+
+        </div>
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                04
+            </div>
+
+            <h3>
+                {{ infection_types }}
+            </h3>
+
+            <p>
+                Infection types included
+                in the dataset.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
 
 <!-- ABOUT -->
 
@@ -139,6 +234,151 @@ Home | ImmuniGuide
             to explore and understand.
 
         </p>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     MISSION
+     ===================================================== -->
+
+<section class="home-about">
+
+    <div class="home-about-content">
+
+        <div>
+
+            <p class="eyebrow">
+                OUR MISSION
+            </p>
+
+            {% if mission %}
+
+                <h2>
+                    {{ mission['title'] }}
+                </h2>
+
+            {% endif %}
+
+        </div>
+
+        {% if mission %}
+
+            <p class="home-about-text">
+
+                {{ mission['content'] }}
+
+            </p>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     INTERESTING FACTS
+     ===================================================== -->
+
+<section class="home-features">
+
+    <div class="home-section-heading">
+
+        <p class="eyebrow">
+            DID YOU KNOW?
+        </p>
+
+        <h2>
+            Four Things About The Data
+        </h2>
+
+        <p>
+            A few useful facts about the information
+            available in ImmuniGuide.
+        </p>
+
+    </div>
+
+
+    <div class="features">
+
+        {% for fact in facts %}
+
+            <div class="feature-card">
+
+                <div class="feature-number">
+
+                    {{ "%02d"|format(loop.index) }}
+
+                </div>
+
+                <h3>
+                    {{ fact['title'] }}
+                </h3>
+
+                <p>
+                    {{ fact['content'] }}
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     PERSONAS
+     ===================================================== -->
+
+<section class="home-features">
+
+    <div class="home-section-heading">
+
+        <p class="eyebrow">
+            OUR USERS
+        </p>
+
+        <h2>
+            Who Is ImmuniGuide For?
+        </h2>
+
+        <p>
+            Our design was shaped around the needs
+            identified during our user research.
+        </p>
+
+    </div>
+
+
+    <div class="features">
+
+        {% for persona in personas %}
+
+            <div class="feature-card">
+
+                <div class="feature-number">
+
+                    {{ "%02d"|format(loop.index) }}
+
+                </div>
+
+                <h3>
+                    {{ persona['title'] }}
+                </h3>
+
+                <p>
+                    {{ persona['content'] }}
+                </p>
+
+            </div>
+
+        {% endfor %}
 
     </div>
 
@@ -184,8 +424,11 @@ Home | ImmuniGuide
             </p>
 
             <a href="{{ url_for('explore') }}">
+
                 Explore data
+
                 <span>→</span>
+
             </a>
 
         </div>
@@ -210,8 +453,11 @@ Home | ImmuniGuide
             </p>
 
             <a href="{{ url_for('compare') }}">
+
                 Compare data
+
                 <span>→</span>
+
             </a>
 
         </div>
@@ -236,7 +482,38 @@ Home | ImmuniGuide
             </p>
 
             <a href="{{ url_for('trends') }}">
+
                 View trends
+
+                <span>→</span>
+
+            </a>
+
+        </div>
+
+
+        <!-- INFECTIONS -->
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                04
+            </div>
+
+            <h3>
+                Infections
+            </h3>
+
+            <p>
+                Explore infection cases by economic status,
+                infection type and year to understand
+                differences across countries.
+            </p>
+
+            <a href="{{ url_for('infections') }}">
+
+                Explore infections
+
                 <span>→</span>
 
             </a>
@@ -245,6 +522,76 @@ Home | ImmuniGuide
 
 
     </div>
+
+</section>
+
+
+<!-- =====================================================
+     TEAM
+     ===================================================== -->
+
+<section class="home-features">
+
+    <div class="home-section-heading">
+
+        <p class="eyebrow">
+            OUR TEAM
+        </p>
+
+        <h2>
+            Built By
+        </h2>
+
+        <p>
+            ImmuniGuide was developed collaboratively
+            through research, development and usability testing.
+        </p>
+
+    </div>
+
+
+    <div class="features">
+
+        {% for member in team %}
+
+            <div class="feature-card">
+
+                <div class="feature-number">
+
+                    {{ "%02d"|format(loop.index) }}
+
+                </div>
+
+                <h3>
+                    {{ member['title'] }}
+                </h3>
+
+                <p>
+                    {{ member['content'] }}
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% if teamwork %}
+
+        <div class="explore-insight">
+
+            <p class="insight-label">
+                TEAMWORK REFLECTION
+            </p>
+
+            <p>
+                {{ teamwork['content'] }}
+            </p>
+
+        </div>
+
+    {% endif %}
 
 </section>
 
