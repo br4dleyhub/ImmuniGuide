@@ -1,12 +1,15 @@
 {% extends "base.html" %}
 
 {% block title %}
-Insights | ImmuniGuide
+
+    Insights | ImmuniGuide
+
 {% endblock %}
 
 {% block content %}
 
 <section class="explore-page">
+
 
     <!-- PAGE HEADER -->
 
@@ -17,7 +20,7 @@ Insights | ImmuniGuide
         </p>
 
         <h1>
-            Latest Immunisation News
+            Latest WHO Health News
         </h1>
 
         <p>
@@ -43,7 +46,7 @@ Insights | ImmuniGuide
         </div>
 
         <span class="update-time">
-            Latest available updates
+            Latest available WHO articles
         </span>
 
     </div>
@@ -59,18 +62,24 @@ Insights | ImmuniGuide
 
         <article class="insight-news-card">
 
+
             <!-- CATEGORY -->
 
             <div class="news-card-top">
 
                 <span class="news-category">
+
                     {{ article.category }}
+
                 </span>
+
 
                 {% if article.news_type %}
 
                 <span class="news-type">
+
                     {{ article.news_type }}
+
                 </span>
 
                 {% endif %}
@@ -81,7 +90,9 @@ Insights | ImmuniGuide
             <!-- TITLE -->
 
             <h2>
+
                 {{ article.title }}
+
             </h2>
 
 
@@ -90,7 +101,11 @@ Insights | ImmuniGuide
             {% if article.published %}
 
             <p class="news-date">
+
+                Published:
+
                 {{ article.published }}
+
             </p>
 
             {% endif %}
@@ -100,10 +115,11 @@ Insights | ImmuniGuide
 
             <p class="news-description">
 
-                Latest information from the
-                World Health Organization relating to
-                global health, vaccination and
-                immunisation developments.
+                Latest information published by the
+                World Health Organization.
+
+                This article is provided directly from
+                the WHO news feed.
 
             </p>
 
@@ -114,12 +130,17 @@ Insights | ImmuniGuide
                 href="{{ article.link }}"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="news-link">
+                class="news-link"
+            >
 
-                Read article
-                <span>→</span>
+                Read on WHO
+
+                <span>
+                    →
+                </span>
 
             </a>
+
 
         </article>
 
@@ -139,10 +160,11 @@ Insights | ImmuniGuide
             </span>
 
             <strong>
-                World Health Organization(WHO)
+                World Health Organization (WHO)
             </strong>
 
         </div>
+
 
         <div>
 
@@ -151,19 +173,24 @@ Insights | ImmuniGuide
             </span>
 
             <strong>
-                Live news feed
+                Live WHO news feed
             </strong>
 
         </div>
 
+
         <div>
 
             <span class="feed-info-label">
-                UPDATES
+                ARTICLES
             </span>
 
             <strong>
-                Latest available articles
+
+                {{ articles|length }}
+
+                latest articles
+
             </strong>
 
         </div>
@@ -171,7 +198,24 @@ Insights | ImmuniGuide
     </div>
 
 
+    <!-- REFRESH -->
+
+    <div class="refresh-container">
+
+        <a
+            href="{{ url_for('insights') }}"
+            class="primary-button"
+        >
+
+            Refresh News
+
+        </a>
+
+    </div>
+
+
     {% else %}
+
 
     <!-- ERROR STATE -->
 
@@ -181,49 +225,38 @@ Insights | ImmuniGuide
             !
         </div>
 
+
         <p class="eyebrow">
             NEWS FEED
         </p>
 
+
         <h2>
-            Unable to load news
+            Unable to load WHO news
         </h2>
 
+
         <p>
-            The latest immunisation news could not be
-            loaded right now. Please try again.
+
+            The latest WHO news could not be loaded
+            right now.
+
+            Please check your connection and try again.
+
         </p>
 
-        <button
-            type="button"
+
+        <a
+            href="{{ url_for('insights') }}"
             class="primary-button"
-            onclick="window.location.reload()">
+        >
 
             Refresh Feed
 
-        </button>
+        </a>
 
     </div>
 
-    {% endif %}
-
-
-    <!-- REFRESH -->
-
-    {% if articles %}
-
-    <div class="refresh-container">
-
-        <button
-            type="button"
-            class="primary-button"
-            onclick="window.location.reload()">
-
-            Refresh News
-
-        </button>
-
-    </div>
 
     {% endif %}
 

@@ -2,7 +2,9 @@
 
 {% block title %}
 
+
 Explore | ImmuniGuide
+
 
 {% endblock %}
 
@@ -10,687 +12,732 @@ Explore | ImmuniGuide
 
 <section class="explore-page">
 
-    <div class="page-header">
 
-        <p class="eyebrow">
-            EXPLORE IMMUNISATION
-        </p>
+<!-- PAGE HEADER -->
 
-        <h1>
-            Explore vaccination data
-        </h1>
+<div class="page-header">
 
-        <p>
-            Select a region, country, year and vaccine to explore
-            immunisation information.
-        </p>
+    <p class="eyebrow">
+        EXPLORE IMMUNISATION
+    </p>
 
-    </div>
+    <h1>
+        Explore vaccination data
+    </h1>
 
+    <p>
+        Select a region, country, year and vaccine to explore
+        immunisation information.
+    </p>
 
-    <div class="search-card">
-
-        <form method="GET" action="/explore">
-
-            <!-- Region -->
-
-            <div class="form-group">
-
-                <label for="region">
-                    Region
-                </label>
-
-                <select id="region" name="region">
-
-                    <option value="">
-                        Select a region
-                    </option>
-
-                    {% for region_item in regions %}
-
-                    <option
-                        value="{{ region_item['RegionID'] }}"
-                        {% if region_item['RegionID'] == request.args.get('region') %}
-                        selected
-                        {% endif %}
-                    >
-
-                        {{ region_item['region'] }}
-
-                    </option>
-
-                    {% endfor %}
-
-                </select>
-
-                <button
-                    type="submit"
-                    name="filter_region"
-                    value="1"
-                    class="secondary-button">
-
-                    Apply Region
-
-                </button>
-
-            </div>
+</div>
 
 
-            <!-- Country -->
+<!-- SEARCH CARD -->
 
-            <div class="form-group">
+<div class="search-card">
 
-                <label for="country">
-                    Country
-                </label>
-
-                <select id="country" name="country">
-
-                    <option value="">
-                        Select a country
-                    </option>
-
-                    {% for country in countries %}
-
-                    <option
-                        value="{{ country['CountryID'] }}"
-                        {% if country['CountryID'] == request.args.get('country') %}
-                        selected
-                        {% endif %}
-                    >
-
-                        {{ country['name'] }}
-
-                    </option>
-
-                    {% endfor %}
-
-                </select>
-
-            </div>
+    <form
+        method="GET"
+        action="{{ url_for('explore') }}"
+    >
 
 
-            <!-- Year -->
+        <!-- REGION -->
 
-            <div class="form-group">
+        <div class="form-group">
 
-                <label for="year">
-                    Year
-                </label>
+            <label for="region">
+                Region
+            </label>
 
-                <select id="year" name="year">
+            <select
+                id="region"
+                name="region"
+            >
 
-                    <option value="">
-                        Select a year
-                    </option>
+                <option value="">
+                    Select a region
+                </option>
 
-                    {% for year in years %}
+                {% for region_item in regions %}
 
-                    <option
-                        value="{{ year['YearID'] }}"
-                        {% if year['YearID']|string == request.args.get('year') %}
-                        selected
-                        {% endif %}
-                    >
+                <option
+                    value="{{ region_item['RegionID'] }}"
+                    {% if region_item['RegionID'] == request.args.get('region') %}
+                    selected
+                    {% endif %}
+                >
 
-                        {{ year['YearID'] }}
+                    {{ region_item['region'] }}
 
-                    </option>
+                </option>
 
-                    {% endfor %}
+                {% endfor %}
 
-                </select>
-
-            </div>
-
-
-            <!-- Vaccine -->
-
-            <div class="form-group">
-
-                <label for="antigen">
-                    Vaccine
-                </label>
-
-                <select id="antigen" name="antigen">
-
-                    <option value="">
-                        Select a vaccine
-                    </option>
-
-                    {% for antigen in antigens %}
-
-                    <option
-                        value="{{ antigen['AntigenID'] }}"
-                        {% if antigen['AntigenID'] == request.args.get('antigen') %}
-                        selected
-                        {% endif %}
-                    >
-
-                        {{ antigen['name'] }}
-
-                    </option>
-
-                    {% endfor %}
-
-                </select>
-
-            </div>
+            </select>
 
 
             <button
                 type="submit"
-                class="primary-button">
+                name="filter_region"
+                value="1"
+                class="secondary-button"
+            >
 
-                Explore Data
+                Apply Region
 
             </button>
-
-        </form>
-
-    </div>
-
-
-    <!-- =====================================================
-         INDIVIDUAL COUNTRY RESULT
-         ===================================================== -->
-
-    {% if result %}
-
-    <div class="explore-result">
-
-        <div class="explore-result-header">
-
-            <div>
-
-                <p class="eyebrow">
-                    IMMUNISATION RESULT
-                </p>
-
-                <h2>
-                    {{ result['vaccine_name'] }}
-                </h2>
-
-                <p class="result-location">
-
-                    {{ result['country_name'] }}
-
-                    ·
-
-                    {{ result['year'] }}
-
-                </p>
-
-            </div>
-
-
-            {% if coverage_level %}
-
-            <div class="coverage-badge">
-
-                {{ coverage_level }}
-
-            </div>
-
-            {% endif %}
 
         </div>
 
 
-        <!-- Vaccination coverage -->
+        <!-- COUNTRY -->
 
-        <div class="coverage-highlight">
+        <div class="form-group">
 
-            <div class="coverage-main">
+            <label for="country">
+                Country
+            </label>
 
-                <span>
-                    VACCINATION COVERAGE
-                </span>
+            <select
+                id="country"
+                name="country"
+            >
 
-                {% if people_per_100 is not none %}
+                <option value="">
+                    Select a country
+                </option>
 
-                <strong>
-                    {{ people_per_100 }}%
-                </strong>
+                {% for country in countries %}
 
-                {% else %}
+                <option
+                    value="{{ country['CountryID'] }}"
+                    {% if country['CountryID'] == request.args.get('country') %}
+                    selected
+                    {% endif %}
+                >
 
-                <strong>
-                    N/A
-                </strong>
+                    {{ country['name'] }}
 
-                {% endif %}
+                </option>
 
-            </div>
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <!-- YEAR -->
+
+        <div class="form-group">
+
+            <label for="year">
+                Year
+            </label>
+
+            <select
+                id="year"
+                name="year"
+            >
+
+                <option value="">
+                    Select a year
+                </option>
+
+                {% for year in years %}
+
+                <option
+                    value="{{ year['YearID'] }}"
+                    {% if year['YearID']|string == request.args.get('year') %}
+                    selected
+                    {% endif %}
+                >
+
+                    {{ year['YearID'] }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <!-- VACCINE -->
+
+        <div class="form-group">
+
+            <label for="antigen">
+                Vaccine
+            </label>
+
+            <select
+                id="antigen"
+                name="antigen"
+            >
+
+                <option value="">
+                    Select a vaccine
+                </option>
+
+                {% for antigen in antigens %}
+
+                <option
+                    value="{{ antigen['AntigenID'] }}"
+                    {% if antigen['AntigenID'] == request.args.get('antigen') %}
+                    selected
+                    {% endif %}
+                >
+
+                    {{ antigen['name'] }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <!-- BUTTON -->
+
+        <button
+            type="submit"
+            class="primary-button"
+        >
+
+            Explore Data
+
+        </button>
+
+
+    </form>
+
+</div>
+
+
+<!-- =====================================================
+     INDIVIDUAL COUNTRY RESULT
+     ===================================================== -->
+
+{% if result %}
+
+<div class="explore-result">
+
+
+    <!-- RESULT HEADER -->
+
+    <div class="explore-result-header">
+
+        <div>
+
+            <p class="eyebrow">
+                IMMUNISATION RESULT
+            </p>
+
+            <h2>
+                {{ result['vaccine_name'] }}
+            </h2>
+
+            <p class="result-location">
+
+                {{ result['country_name'] }}
+
+                ·
+
+                {{ result['year'] }}
+
+            </p>
+
+        </div>
+
+
+        {% if coverage_level %}
+
+        <div class="coverage-badge">
+
+            {{ coverage_level }}
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- VACCINATION COVERAGE -->
+
+    <div class="coverage-highlight">
+
+        <div class="coverage-main">
+
+            <span>
+                VACCINATION COVERAGE
+            </span>
 
 
             {% if people_per_100 is not none %}
 
-            <div class="explore-progress-wrapper">
+            <strong>
 
-                <progress
-                    class="explore-progress"
-                    value="{{ people_per_100 }}"
-                    max="100">
+                {{ people_per_100 }}%
 
-                </progress>
-
-            </div>
-
-
-            <p class="coverage-explanation">
-
-                Approximately
-
-                <strong>
-                    {{ people_per_100 }}
-                </strong>
-
-                out of every 100 people in the target population
-                received this vaccine.
-
-            </p>
+            </strong>
 
             {% else %}
 
-            <p class="coverage-explanation">
-
-                Coverage data is not available for this selection.
-
-            </p>
+            <strong>
+                N/A
+            </strong>
 
             {% endif %}
 
         </div>
 
 
-        <!-- Country statistics -->
+        {% if people_per_100 is not none %}
 
-        <div class="explore-stat-grid">
+        <div class="explore-progress-wrapper">
 
-
-            <div class="explore-stat-card">
-
-                <span class="stat-label">
-                    TARGET POPULATION
-                </span>
-
-                <strong>
-
-                    {% if target_population is not none %}
-
-                    {{ target_population }}
-
-                    {% else %}
-
-                    N/A
-
-                    {% endif %}
-
-                </strong>
-
-                <p>
-                    People included in the target group
-                </p>
-
-            </div>
-
-
-            <div class="explore-stat-card">
-
-                <span class="stat-label">
-                    DOSES ADMINISTERED
-                </span>
-
-                <strong>
-
-                    {% if doses_administered is not none %}
-
-                    {{ doses_administered }}
-
-                    {% else %}
-
-                    N/A
-
-                    {% endif %}
-
-                </strong>
-
-                <p>
-                    Recorded doses administered
-                </p>
-
-            </div>
-
-
-            <div class="explore-stat-card">
-
-                <span class="stat-label">
-                    REPORTING YEAR
-                </span>
-
-                <strong>
-                    {{ result['year'] }}
-                </strong>
-
-                <p>
-                    Year represented by the data
-                </p>
-
-            </div>
+            <progress
+                class="explore-progress"
+                value="{{ people_per_100 }}"
+                max="100"
+            >
+            </progress>
 
         </div>
 
 
-        <!-- Interpretation -->
+        <p class="coverage-explanation">
 
-        <div class="explore-insight">
+            Approximately
 
-            <div class="insight-label">
-                DATA INTERPRETATION
-            </div>
+            <strong>
+                {{ people_per_100 }}
+            </strong>
 
-            {% if coverage_level %}
+            out of every 100 people in the target population
+            received this vaccine.
 
-            <p>
+        </p>
 
-                The selected vaccination programme recorded
 
-                <strong>
-                    {{ result['coverage'] }}%
-                </strong>
+        {% else %}
 
-                coverage in
+        <p class="coverage-explanation">
 
-                <strong>
-                    {{ result['country_name'] }}
-                </strong>
+            Coverage data is not available for this selection.
 
-                during
+        </p>
 
-                <strong>
-                    {{ result['year'] }}
-                </strong>.
-
-                This represents
-
-                <strong>
-                    {{ coverage_level|lower }}
-                </strong>
-
-                according to the coverage classification
-                used by ImmuniGuide.
-
-            </p>
-
-            {% else %}
-
-            <p>
-
-                Coverage information is unavailable for this
-                selection, so a coverage classification cannot
-                be calculated.
-
-            </p>
-
-            {% endif %}
-
-        </div>
+        {% endif %}
 
     </div>
 
-    {% endif %}
+
+    <!-- COUNTRY STATISTICS -->
+
+    <div class="explore-stat-grid">
 
 
+        <!-- TARGET POPULATION -->
 
-    <!-- =====================================================
-         REGIONAL ANALYSIS
-         ===================================================== -->
+        <div class="explore-stat-card">
 
-    {% if regional_summary %}
+            <span class="stat-label">
+                TARGET POPULATION
+            </span>
 
-    <div class="regional-analysis">
+            <strong>
 
-        <div class="page-header">
+                {% if target_population is not none %}
 
-            <p class="eyebrow">
-                REGIONAL ANALYSIS
-            </p>
+                {{ target_population }}
 
-            <h2>
-                {{ regional_summary['region_name'] }}
-            </h2>
+                {% else %}
+
+                N/A
+
+                {% endif %}
+
+            </strong>
 
             <p>
-
-                Regional vaccination summary for
-
-                {{ regional_summary['vaccine_name'] }}
-
-                in
-
-                {{ regional_summary['year'] }}.
-
+                People included in the target group
             </p>
 
         </div>
 
 
-        <!-- Regional statistics -->
+        <!-- DOSES ADMINISTERED -->
 
-        <div class="explore-stat-grid">
+        <div class="explore-stat-card">
 
+            <span class="stat-label">
+                DOSES ADMINISTERED
+            </span>
 
-            <!-- Countries with data -->
+            <strong>
 
-            <div class="explore-stat-card">
+                {% if doses_administered is not none %}
 
-                <span class="stat-label">
-                    COUNTRIES WITH DATA
-                </span>
+                {{ doses_administered }}
 
-                <strong>
-                    {{ regional_summary['country_count'] }}
-                </strong>
+                {% else %}
 
-                <p>
+                N/A
 
-                    Countries with vaccination data
-                    for this selection.
+                {% endif %}
 
-                </p>
-
-            </div>
-
-
-            <!-- Regional average -->
-
-            <div class="explore-stat-card">
-
-                <span class="stat-label">
-                    REGIONAL AVERAGE
-                </span>
-
-                <strong>
-
-                    {% if regional_summary['average_coverage'] is not none %}
-
-                    {{ regional_summary['average_coverage'] }}%
-
-                    {% else %}
-
-                    N/A
-
-                    {% endif %}
-
-                </strong>
-
-                <p>
-
-                    Average vaccination coverage
-                    across countries with data.
-
-                </p>
-
-            </div>
-
-
-            <!-- Countries reaching 90% -->
-
-            <div class="explore-stat-card">
-
-                <span class="stat-label">
-                    COUNTRIES ≥90%
-                </span>
-
-                <strong>
-
-                    {{ regional_summary['countries_90'] }}
-
-                    /
-
-                    {{ regional_summary['country_count'] }}
-
-                </strong>
-
-                <p>
-
-                    {% if countries_90_percentage is not none %}
-
-                    {{ countries_90_percentage }}% of countries
-                    reached at least 90% coverage.
-
-                    {% else %}
-
-                    Percentage could not be calculated.
-
-                    {% endif %}
-
-                </p>
-
-            </div>
-
-
-            <!-- Herd-immunity level -->
-
-            <div class="explore-stat-card">
-
-                <span class="stat-label">
-                    HERD-IMMUNITY LEVEL
-                </span>
-
-                <strong>
-
-                    {{ regional_coverage_level }}
-
-                </strong>
-
-                <p>
-
-                    {{ herd_immunity_status }}
-
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <!-- Herd-immunity analysis -->
-
-        <div class="explore-insight">
-
-            <div class="insight-label">
-                HERD-IMMUNITY ANALYSIS
-            </div>
+            </strong>
 
             <p>
-
-                The regional average vaccination coverage is
-
-                <strong>
-                    {{ regional_summary['average_coverage'] }}%
-                </strong>.
-
-                This gives the region a
-
-                <strong>
-                    {{ regional_coverage_level|lower }}
-                </strong>
-
-                coverage level.
-
-                The project uses
-
-                <strong>
-                    90%
-                </strong>
-
-                as the vaccination target for this analysis.
-
-                Therefore, this region is currently
-
-                <strong>
-                    {{ herd_immunity_status|lower }}
-                </strong>.
-
+                Recorded doses administered
             </p>
 
         </div>
 
 
-        <!-- Countries reaching 90% -->
+        <!-- REPORTING YEAR -->
 
-        <div class="explore-insight">
+        <div class="explore-stat-card">
 
-            <div class="insight-label">
+            <span class="stat-label">
+                REPORTING YEAR
+            </span>
 
-                COUNTRIES WITH AT LEAST 90% COVERAGE
-
-            </div>
-
-
-            {% if countries_90 %}
-
-            <ul class="country-coverage-list">
-
-                {% for country_item in countries_90 %}
-
-                <li>
-
-                    <strong>
-                        {{ country_item['country_name'] }}
-                    </strong>
-
-                    <span>
-                        {{ country_item['coverage'] }}%
-                    </span>
-
-                </li>
-
-                {% endfor %}
-
-            </ul>
-
-
-            {% else %}
+            <strong>
+                {{ result['year'] }}
+            </strong>
 
             <p>
-
-                No countries in this region reached at least
-                90% coverage for the selected vaccine and year.
-
+                Year represented by the data
             </p>
 
-            {% endif %}
-
         </div>
+
 
     </div>
 
-    {% endif %}
+
+    <!-- INTERPRETATION -->
+
+    <div class="explore-insight">
+
+        <div class="insight-label">
+            DATA INTERPRETATION
+        </div>
+
+
+        {% if coverage_level %}
+
+        <p>
+
+            The selected vaccination programme recorded
+
+            <strong>
+                {{ result['coverage'] }}%
+            </strong>
+
+            coverage in
+
+            <strong>
+                {{ result['country_name'] }}
+            </strong>
+
+            during
+
+            <strong>
+                {{ result['year'] }}
+            </strong>.
+
+            This represents
+
+            <strong>
+                {{ coverage_level|lower }}
+            </strong>
+
+            according to the coverage classification
+            used by ImmuniGuide.
+
+        </p>
+
+
+        {% else %}
+
+        <p>
+
+            Coverage information is unavailable for this
+            selection, so a coverage classification cannot
+            be calculated.
+
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+</div>
+
+{% endif %}
+
+
+<!-- =====================================================
+     REGIONAL ANALYSIS
+     ===================================================== -->
+
+{% if regional_summary %}
+
+<div class="regional-analysis">
+
+
+    <!-- REGIONAL HEADER -->
+
+    <div class="page-header">
+
+        <p class="eyebrow">
+            REGIONAL ANALYSIS
+        </p>
+
+        <h2>
+            {{ regional_summary['region_name'] }}
+        </h2>
+
+        <p>
+
+            Regional vaccination summary for
+
+            {{ regional_summary['vaccine_name'] }}
+
+            in
+
+            {{ regional_summary['year'] }}.
+
+        </p>
+
+    </div>
+
+
+    <!-- REGIONAL STATISTICS -->
+
+    <div class="explore-stat-grid">
+
+
+        <!-- COUNTRIES WITH DATA -->
+
+        <div class="explore-stat-card">
+
+            <span class="stat-label">
+                COUNTRIES WITH DATA
+            </span>
+
+            <strong>
+                {{ regional_summary['country_count'] }}
+            </strong>
+
+            <p>
+
+                Countries with vaccination data
+                for this selection.
+
+            </p>
+
+        </div>
+
+
+        <!-- REGIONAL AVERAGE -->
+
+        <div class="explore-stat-card">
+
+            <span class="stat-label">
+                REGIONAL AVERAGE
+            </span>
+
+            <strong>
+
+                {% if regional_summary['average_coverage'] is not none %}
+
+                {{ regional_summary['average_coverage'] }}%
+
+                {% else %}
+
+                N/A
+
+                {% endif %}
+
+            </strong>
+
+            <p>
+
+                Average vaccination coverage
+                across countries with data.
+
+            </p>
+
+        </div>
+
+
+        <!-- COUNTRIES REACHING 90% -->
+
+        <div class="explore-stat-card">
+
+            <span class="stat-label">
+                COUNTRIES ≥90%
+            </span>
+
+            <strong>
+
+                {{ regional_summary['countries_90'] }}
+
+                /
+
+                {{ regional_summary['country_count'] }}
+
+            </strong>
+
+            <p>
+
+                {% if countries_90_percentage is not none %}
+
+                {{ countries_90_percentage }}% of countries
+                reached at least 90% coverage.
+
+                {% else %}
+
+                Percentage could not be calculated.
+
+                {% endif %}
+
+            </p>
+
+        </div>
+
+
+        <!-- HERD-IMMUNITY LEVEL -->
+
+        <div class="explore-stat-card">
+
+            <span class="stat-label">
+                HERD-IMMUNITY LEVEL
+            </span>
+
+            <strong>
+                {{ regional_coverage_level }}
+            </strong>
+
+            <p>
+                {{ herd_immunity_status }}
+            </p>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- HERD-IMMUNITY ANALYSIS -->
+
+    <div class="explore-insight">
+
+        <div class="insight-label">
+            HERD-IMMUNITY ANALYSIS
+        </div>
+
+        <p>
+
+            The regional average vaccination coverage is
+
+            <strong>
+                {{ regional_summary['average_coverage'] }}%
+            </strong>.
+
+            This gives the region a
+
+            <strong>
+                {{ regional_coverage_level|lower }}
+            </strong>
+
+            coverage level.
+
+            The project uses
+
+            <strong>
+                90%
+            </strong>
+
+            as the vaccination target for this analysis.
+
+            Therefore, this region is currently
+
+            <strong>
+                {{ herd_immunity_status|lower }}
+            </strong>.
+
+        </p>
+
+    </div>
+
+
+    <!-- COUNTRIES REACHING 90% -->
+
+    <div class="explore-insight">
+
+        <div class="insight-label">
+
+            COUNTRIES WITH AT LEAST 90% COVERAGE
+
+        </div>
+
+
+        {% if countries_90 %}
+
+        <ul class="country-coverage-list">
+
+            {% for country_item in countries_90 %}
+
+            <li>
+
+                <strong>
+                    {{ country_item['country_name'] }}
+                </strong>
+
+                <span>
+                    {{ country_item['coverage'] }}%
+                </span>
+
+            </li>
+
+            {% endfor %}
+
+        </ul>
+
+
+        {% else %}
+
+        <p>
+
+            No countries in this region reached at least
+            90% coverage for the selected vaccine and year.
+
+        </p>
+
+        {% endif %}
+
+
+    </div>
+
+
+</div>
+
+{% endif %}
+
 
 </section>
 
 {% endblock %}
-

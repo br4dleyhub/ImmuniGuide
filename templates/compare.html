@@ -1,28 +1,37 @@
 {% extends "base.html" %}
 
 {% block title %}
+
 Compare | ImmuniGuide
+
 {% endblock %}
 
 {% block content %}
 
 <section class="explore-page">
 
+
     <!-- PAGE HEADER -->
 
     <div class="page-header">
 
         <p class="eyebrow">
+
             COMPARE IMMUNISATION
+
         </p>
 
         <h1>
+
             Compare vaccination coverage
+
         </h1>
 
         <p>
+
             Select a country, vaccine and two years
             to compare immunisation coverage.
+
         </p>
 
     </div>
@@ -32,20 +41,31 @@ Compare | ImmuniGuide
 
     <div class="search-card">
 
-        <form method="GET" action="/compare">
+        <form
+            method="GET"
+            action="{{ url_for('compare') }}"
+        >
+
 
             <!-- COUNTRY -->
 
             <div class="form-group">
 
                 <label for="country">
+
                     Country
+
                 </label>
 
-                <select id="country" name="country">
+                <select
+                    id="country"
+                    name="country"
+                >
 
                     <option value="">
+
                         Select a country
+
                     </option>
 
                     {% for country in countries %}
@@ -73,13 +93,20 @@ Compare | ImmuniGuide
             <div class="form-group">
 
                 <label for="antigen">
+
                     Vaccine
+
                 </label>
 
-                <select id="antigen" name="antigen">
+                <select
+                    id="antigen"
+                    name="antigen"
+                >
 
                     <option value="">
+
                         Select a vaccine
+
                     </option>
 
                     {% for antigen in antigens %}
@@ -107,13 +134,20 @@ Compare | ImmuniGuide
             <div class="form-group">
 
                 <label for="year1">
+
                     First year
+
                 </label>
 
-                <select id="year1" name="year1">
+                <select
+                    id="year1"
+                    name="year1"
+                >
 
                     <option value="">
+
                         Select first year
+
                     </option>
 
                     {% for year in years %}
@@ -141,13 +175,20 @@ Compare | ImmuniGuide
             <div class="form-group">
 
                 <label for="year2">
+
                     Second year
+
                 </label>
 
-                <select id="year2" name="year2">
+                <select
+                    id="year2"
+                    name="year2"
+                >
 
                     <option value="">
+
                         Select second year
+
                     </option>
 
                     {% for year in years %}
@@ -174,7 +215,8 @@ Compare | ImmuniGuide
 
             <button
                 type="submit"
-                class="primary-button">
+                class="primary-button"
+            >
 
                 Compare Data
 
@@ -201,11 +243,15 @@ Compare | ImmuniGuide
             <div>
 
                 <p class="eyebrow">
+
                     COVERAGE COMPARISON
+
                 </p>
 
                 <h2>
+
                     Vaccination coverage by year
+
                 </h2>
 
             </div>
@@ -236,11 +282,15 @@ Compare | ImmuniGuide
                 <div class="year-card-top">
 
                     <span>
+
                         {{ year1 }}
+
                     </span>
 
                     <strong>
+
                         {{ result1["coverage"] }}%
+
                     </strong>
 
                 </div>
@@ -249,12 +299,15 @@ Compare | ImmuniGuide
                 <progress
                     class="comparison-progress"
                     value="{{ result1['coverage'] }}"
-                    max="100">
+                    max="100"
+                >
                 </progress>
 
 
                 <p>
+
                     Vaccination coverage
+
                 </p>
 
             </div>
@@ -267,11 +320,15 @@ Compare | ImmuniGuide
                 <div class="year-card-top">
 
                     <span>
+
                         {{ year2 }}
+
                     </span>
 
                     <strong>
+
                         {{ result2["coverage"] }}%
+
                     </strong>
 
                 </div>
@@ -280,12 +337,15 @@ Compare | ImmuniGuide
                 <progress
                     class="comparison-progress"
                     value="{{ result2['coverage'] }}"
-                    max="100">
+                    max="100"
+                >
                 </progress>
 
 
                 <p>
+
                     Vaccination coverage
+
                 </p>
 
             </div>
@@ -301,10 +361,13 @@ Compare | ImmuniGuide
 
         <div class="change-card">
 
+
             <div class="change-label">
 
                 <span>
+
                     OVERALL CHANGE
+
                 </span>
 
             </div>
@@ -334,15 +397,20 @@ Compare | ImmuniGuide
 
                     {% endif %}
 
+
                     <small>
+
                         percentage points
+
                     </small>
 
                 </strong>
 
 
                 <p>
+
                     {{ comparison_message }}
+
                 </p>
 
             </div>

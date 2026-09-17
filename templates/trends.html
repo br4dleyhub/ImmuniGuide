@@ -2,9 +2,7 @@
 
 {% block title %}
 
-
-Vaccination Trends | ImmuniGuide
-
+    Vaccination Trends | ImmuniGuide
 
 {% endblock %}
 
@@ -13,480 +11,515 @@ Vaccination Trends | ImmuniGuide
 <section class="explore-page">
 
 
-<!-- PAGE HEADER -->
+    <!-- PAGE HEADER -->
 
-<div class="page-header">
+    <div class="page-header">
 
-    <p class="eyebrow">
-        VACCINATION TRENDS
-    </p>
+        <p class="eyebrow">
+            VACCINATION TRENDS
+        </p>
 
-    <h1>
-        Find the Biggest Improvements
-    </h1>
+        <h1>
+            Find the Biggest Improvements
+        </h1>
 
-    <p>
-        Compare vaccination coverage between two years
-        and identify countries with the largest increase.
-    </p>
+        <p>
+            Compare vaccination coverage between two years
+            and identify countries with the largest increase.
+        </p>
 
-</div>
-
-
-<!-- SEARCH CARD -->
-
-<div class="search-card">
-
-    <form
-        method="GET"
-        action="{{ url_for('trends') }}"
-    >
-
-        <!-- START YEAR -->
-
-        <div class="form-group">
-
-            <label for="start_year">
-                Starting Year
-            </label>
-
-            <select
-                id="start_year"
-                name="start_year"
-                required
-            >
-
-                <option value="">
-                    Select starting year
-                </option>
-
-                {% for year in years %}
-
-                <option
-                    value="{{ year['YearID'] }}"
-                    {% if selected_start_year == year['YearID']|string %}
-                    selected
-                    {% endif %}
-                >
-
-                    {{ year['YearID'] }}
-
-                </option>
-
-                {% endfor %}
-
-            </select>
-
-        </div>
+    </div>
 
 
-        <!-- END YEAR -->
+    <!-- SEARCH CARD -->
 
-        <div class="form-group">
+    <div class="search-card">
 
-            <label for="end_year">
-                Ending Year
-            </label>
-
-            <select
-                id="end_year"
-                name="end_year"
-                required
-            >
-
-                <option value="">
-                    Select ending year
-                </option>
-
-                {% for year in years %}
-
-                <option
-                    value="{{ year['YearID'] }}"
-                    {% if selected_end_year == year['YearID']|string %}
-                    selected
-                    {% endif %}
-                >
-
-                    {{ year['YearID'] }}
-
-                </option>
-
-                {% endfor %}
-
-            </select>
-
-        </div>
-
-
-        <!-- ANTIGEN -->
-
-        <div class="form-group">
-
-            <label for="antigen">
-                Antigen
-            </label>
-
-            <select
-                id="antigen"
-                name="antigen"
-                required
-            >
-
-                <option value="">
-                    Select antigen
-                </option>
-
-                {% for item in antigens %}
-
-                <option
-                    value="{{ item['AntigenID'] }}"
-                    {% if selected_antigen == item['AntigenID'] %}
-                    selected
-                    {% endif %}
-                >
-
-                    {{ item['name'] }}
-
-                </option>
-
-                {% endfor %}
-
-            </select>
-
-        </div>
-
-
-        <!-- NUMBER OF COUNTRIES -->
-
-        <div class="form-group">
-
-            <label for="limit">
-                Number of Countries to Display
-            </label>
-
-            <select
-                id="limit"
-                name="limit"
-                required
-            >
-
-                <option
-                    value="5"
-                    {% if selected_limit == 5 %}
-                    selected
-                    {% endif %}
-                >
-                    5 countries
-                </option>
-
-                <option
-                    value="10"
-                    {% if selected_limit == 10 %}
-                    selected
-                    {% endif %}
-                >
-                    10 countries
-                </option>
-
-                <option
-                    value="20"
-                    {% if selected_limit == 20 %}
-                    selected
-                    {% endif %}
-                >
-                    20 countries
-                </option>
-
-                <option
-                    value="50"
-                    {% if selected_limit == 50 %}
-                    selected
-                    {% endif %}
-                >
-                    50 countries
-                </option>
-
-            </select>
-
-        </div>
-
-
-        <!-- BUTTON -->
-
-        <button
-            type="submit"
-            class="primary-button"
+        <form
+            method="GET"
+            action="{{ url_for('trends') }}"
         >
 
-            Analyse Improvements
 
-        </button>
+            <!-- START YEAR -->
 
-    </form>
+            <div class="form-group">
 
-</div>
+                <label for="start_year">
+                    Starting Year
+                </label>
+
+                <select
+                    id="start_year"
+                    name="start_year"
+                    required
+                >
+
+                    <option value="">
+                        Select starting year
+                    </option>
+
+                    {% for year in years %}
+
+                    <option
+                        value="{{ year['YearID'] }}"
+                        {% if selected_start_year == year['YearID']|string %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ year['YearID'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
 
 
-<!-- RESULTS -->
+            <!-- END YEAR -->
 
-{% if results %}
+            <div class="form-group">
 
-<div class="explore-result">
+                <label for="end_year">
+                    Ending Year
+                </label>
 
-    <div class="explore-result-header">
+                <select
+                    id="end_year"
+                    name="end_year"
+                    required
+                >
 
-        <div>
+                    <option value="">
+                        Select ending year
+                    </option>
 
-            <p class="eyebrow">
-                RESULTS
-            </p>
+                    {% for year in years %}
 
-            <h2>
-                Vaccination Improvement
-            </h2>
+                    <option
+                        value="{{ year['YearID'] }}"
+                        {% if selected_end_year == year['YearID']|string %}
+                        selected
+                        {% endif %}
+                    >
 
-            <p class="result-location">
+                        {{ year['YearID'] }}
 
-                Showing the top
-                {{ total_countries }}
-                countries by improvement
+                    </option>
 
-            </p>
+                    {% endfor %}
 
-        </div>
+                </select>
+
+            </div>
 
 
-        <div class="coverage-badge">
+            <!-- ANTIGEN -->
 
-            {{ selected_start_year }}
+            <div class="form-group">
 
-            →
+                <label for="antigen">
+                    Antigen
+                </label>
 
-            {{ selected_end_year }}
+                <select
+                    id="antigen"
+                    name="antigen"
+                    required
+                >
 
-        </div>
+                    <option value="">
+                        Select antigen
+                    </option>
+
+                    {% for item in antigens %}
+
+                    <option
+                        value="{{ item['AntigenID'] }}"
+                        {% if selected_antigen == item['AntigenID'] %}
+                        selected
+                        {% endif %}
+                    >
+
+                        {{ item['name'] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- NUMBER OF COUNTRIES -->
+
+            <div class="form-group">
+
+                <label for="limit">
+                    Number of Countries to Display
+                </label>
+
+                <select
+                    id="limit"
+                    name="limit"
+                    required
+                >
+
+                    <option
+                        value="5"
+                        {% if selected_limit == 5 %}
+                        selected
+                        {% endif %}
+                    >
+
+                        5 countries
+
+                    </option>
+
+
+                    <option
+                        value="10"
+                        {% if selected_limit == 10 %}
+                        selected
+                        {% endif %}
+                    >
+
+                        10 countries
+
+                    </option>
+
+
+                    <option
+                        value="20"
+                        {% if selected_limit == 20 %}
+                        selected
+                        {% endif %}
+                    >
+
+                        20 countries
+
+                    </option>
+
+
+                    <option
+                        value="50"
+                        {% if selected_limit == 50 %}
+                        selected
+                        {% endif %}
+                    >
+
+                        50 countries
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+
+                Analyse Improvements
+
+            </button>
+
+
+        </form>
 
     </div>
 
 
-    <!-- SUMMARY -->
+    <!-- RESULTS -->
 
-    <div class="explore-stat-grid">
+    {% if results %}
 
-        <div class="explore-stat-card">
-
-            <span class="stat-label">
-                STARTING YEAR
-            </span>
-
-            <strong>
-                {{ selected_start_year }}
-            </strong>
-
-            <p>
-                Beginning coverage
-            </p>
-
-        </div>
+    <div class="explore-result">
 
 
-        <div class="explore-stat-card">
+        <!-- RESULT HEADER -->
 
-            <span class="stat-label">
-                ENDING YEAR
-            </span>
-
-            <strong>
-                {{ selected_end_year }}
-            </strong>
-
-            <p>
-                Final coverage
-            </p>
-
-        </div>
-
-
-        <div class="explore-stat-card">
-
-            <span class="stat-label">
-                COUNTRIES DISPLAYED
-            </span>
-
-            <strong>
-                {{ total_countries }}
-            </strong>
-
-            <p>
-                Selected number of results
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <!-- COUNTRY RESULTS -->
-
-    <div class="infection-results">
-
-        <div class="infection-result-header">
+        <div class="explore-result-header">
 
             <div>
 
                 <p class="eyebrow">
-                    RANKED BY IMPROVEMENT
+                    RESULTS
                 </p>
 
                 <h2>
-                    Countries with Largest Increase
+                    Vaccination Improvement
                 </h2>
 
-                <p>
-                    Results are sorted from the largest
-                    vaccination coverage increase to the smallest.
+                <p class="result-location">
+
+                    Showing the top
+
+                    {{ total_countries }}
+
+                    countries by improvement
+
                 </p>
+
+            </div>
+
+
+            <div class="coverage-badge">
+
+                {{ selected_start_year }}
+
+                →
+
+                {{ selected_end_year }}
 
             </div>
 
         </div>
 
 
-        <div class="infection-grid">
+        <!-- SUMMARY -->
 
-            {% for result in results %}
-
-            <div class="infection-card">
-
-                <div class="infection-badge">
-
-                    #{{ loop.index }}
-
-                </div>
+        <div class="explore-stat-grid">
 
 
-                <h3>
-                    {{ result['country'] }}
-                </h3>
+            <div class="explore-stat-card">
 
+                <span class="stat-label">
+                    STARTING YEAR
+                </span>
 
-                <p class="infection-type">
-
+                <strong>
                     {{ selected_start_year }}
+                </strong>
 
-                    →
-
-                    {{ selected_end_year }}
-
-                </p>
-
-
-                <div class="infection-cases">
-
-                    <span>
-                        VACCINATION COVERAGE
-                    </span>
-
-                    <strong>
-
-                        +{{ result['improvement'] }}%
-
-                    </strong>
-
-                </div>
-
-
-                <p style="margin-top: 15px; color: #60777C;">
-
-                    {{ selected_start_year }}:
-
-                    {{ result['start_coverage'] }}%
-
-                    <br>
-
-                    {{ selected_end_year }}:
-
-                    {{ result['end_coverage'] }}%
-
+                <p>
+                    Beginning coverage
                 </p>
 
             </div>
 
-            {% endfor %}
+
+            <div class="explore-stat-card">
+
+                <span class="stat-label">
+                    ENDING YEAR
+                </span>
+
+                <strong>
+                    {{ selected_end_year }}
+                </strong>
+
+                <p>
+                    Final coverage
+                </p>
+
+            </div>
+
+
+            <div class="explore-stat-card">
+
+                <span class="stat-label">
+                    COUNTRIES DISPLAYED
+                </span>
+
+                <strong>
+                    {{ total_countries }}
+                </strong>
+
+                <p>
+                    Selected number of results
+                </p>
+
+            </div>
+
 
         </div>
+
+
+        <!-- COUNTRY RESULTS -->
+
+        <div class="infection-results">
+
+
+            <div class="infection-result-header">
+
+                <div>
+
+                    <p class="eyebrow">
+                        RANKED BY IMPROVEMENT
+                    </p>
+
+                    <h2>
+                        Countries with Largest Increase
+                    </h2>
+
+                    <p>
+                        Results are sorted from the largest
+                        vaccination coverage increase to the smallest.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="infection-grid">
+
+
+                {% for result in results %}
+
+                <div class="infection-card">
+
+
+                    <div class="infection-badge">
+
+                        #{{ loop.index }}
+
+                    </div>
+
+
+                    <h3>
+
+                        {{ result['country'] }}
+
+                    </h3>
+
+
+                    <p class="infection-type">
+
+                        {{ selected_start_year }}
+
+                        →
+
+                        {{ selected_end_year }}
+
+                    </p>
+
+
+                    <div class="infection-cases">
+
+                        <span>
+                            VACCINATION COVERAGE
+                        </span>
+
+                        <strong>
+
+                            +{{ result['improvement'] }}%
+
+                        </strong>
+
+                    </div>
+
+
+                    <p
+                        style="
+                            margin-top: 15px;
+                            color: #60777C;
+                        "
+                    >
+
+                        {{ selected_start_year }}:
+
+                        {{ result['start_coverage'] }}%
+
+                        <br>
+
+                        {{ selected_end_year }}:
+
+                        {{ result['end_coverage'] }}%
+
+                    </p>
+
+
+                </div>
+
+                {% endfor %}
+
+
+            </div>
+
+        </div>
+
+
+        <!-- DATA SUMMARY -->
+
+        <div class="explore-insight">
+
+            <p class="insight-label">
+                DATA SUMMARY
+            </p>
+
+            <p>
+
+                Between
+
+                <strong>
+                    {{ selected_start_year }}
+                </strong>
+
+                and
+
+                <strong>
+                    {{ selected_end_year }}
+                </strong>,
+
+                the results compare vaccination coverage for
+                the selected antigen.
+
+                The page displays the top
+
+                <strong>
+                    {{ total_countries }}
+                </strong>
+
+                countries based on their vaccination coverage
+                improvement.
+
+                Countries are ordered from the largest increase
+                to the smallest increase.
+
+            </p>
+
+        </div>
+
 
     </div>
 
 
-    <!-- DATA SUMMARY -->
+    {% elif selected_start_year
+        and selected_end_year
+        and selected_antigen %}
 
-    <div class="explore-insight">
 
-        <p class="insight-label">
-            DATA SUMMARY
-        </p>
+    <!-- NO RESULTS -->
+
+    <div class="result-card">
+
+        <h2>
+            No vaccination data found
+        </h2>
 
         <p>
 
-            Between
+            No countries had vaccination coverage data
+            for both selected years and the selected antigen.
 
-            <strong>
-                {{ selected_start_year }}
-            </strong>
-
-            and
-
-            <strong>
-                {{ selected_end_year }}
-            </strong>,
-
-            the results compare vaccination coverage for
-            the selected antigen.
-
-            The page displays the top
-
-            <strong>
-                {{ total_countries }}
-            </strong>
-
-            countries based on their vaccination coverage
-            improvement.
-
-            Countries are ordered from the largest increase
-            to the smallest increase.
+            Try different options.
 
         </p>
 
     </div>
 
-</div>
 
-
-{% elif selected_start_year
-    and selected_end_year
-    and selected_antigen %}
-
-<!-- NO RESULTS -->
-
-<div class="result-card">
-
-    <h2>
-        No vaccination data found
-    </h2>
-
-    <p>
-
-        No countries had vaccination coverage data
-        for both selected years and the selected antigen.
-
-        Try different options.
-
-    </p>
-
-</div>
-
-{% endif %}
+    {% endif %}
 
 
 </section>

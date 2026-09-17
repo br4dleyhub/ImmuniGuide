@@ -5,26 +5,43 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>
         {% block title %}ImmuniGuide{% endblock %}
     </title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 
 </head>
 
 <body>
 
+
+    <!-- NAVIGATION -->
+
     <nav>
 
         <div class="nav-container">
 
-            <a href="{{ url_for('home') }}" class="logo">
-                ImmuniGuide
+            <a
+                href="{{ url_for('home') }}"
+                class="logo"
+            >
+
+                <img
+                    src="{{ url_for('static', filename='images/immuniguide-logo.png') }}"
+                    alt="ImmuniGuide"
+                >
+
             </a>
+
 
             <div class="nav-links">
 
@@ -54,12 +71,18 @@
 
     </nav>
 
+
+    <!-- MAIN CONTENT -->
+
     <main>
 
         {% block content %}
         {% endblock %}
 
     </main>
+
+
+    <!-- FOOTER -->
 
     <footer>
 
@@ -68,6 +91,7 @@
         </p>
 
     </footer>
+
 
 </body>
 

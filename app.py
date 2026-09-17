@@ -77,9 +77,34 @@ def get_news():
             data = []
 
 
-        # Sort articles by the real publication date
+        # =====================================================
+        # SORT BY PUBLICATION DATE
+        # =====================================================
 
         def get_date(item):
+
+            date = item.get(
+                "PublicationDateAndTime",
+                ""
+            )
+
+            if date:
+
+                try:
+
+                    return datetime.fromisoformat(
+                        date.replace(
+                            "Z",
+                            "+00:00"
+                        )
+                    )
+
+                except (ValueError, TypeError):
+
+                    pass
+
+
+            # Fallback to FormatedDate
 
             date = item.get(
                 "FormatedDate",
@@ -104,20 +129,9 @@ def get_news():
         )
 
 
-        # Show the newest articles in the terminal
-
-        print("SORTED WHO ARTICLES:")
-
-        for item in data[:10]:
-
-            print(
-                item.get("Title"),
-                "=> DATE:",
-                item.get("FormatedDate")
-            )
-
-
-        # Get the 10 newest articles
+        # =====================================================
+        # GET THE 10 NEWEST ARTICLES
+        # =====================================================
 
         for item in data[:10]:
 
@@ -127,15 +141,45 @@ def get_news():
             )
 
 
+            # =================================================
+            # ARTICLE LINK
+            # =================================================
+
             link = item.get(
                 "ItemDefaultUrl",
-                "#"
+                ""
             )
 
 
-            # Convert WHO relative links
+            if link:
 
-            if link and link.startswith("/"):
+                # Remove WHO domain if included
+
+                link = link.replace(
+                    "https://www.who.int",
+                    ""
+                )
+
+
+                # Make sure the link starts with /
+
+                if not link.startswith("/"):
+
+                    link = "/" + link
+
+
+                # Add /news/item/ when WHO returns
+                # only the article slug
+
+                if not link.startswith(
+                    "/news/item/"
+                ):
+
+                    link = (
+                        "/news/item"
+                        + link
+                    )
+
 
                 link = (
                     "https://www.who.int"
@@ -143,10 +187,14 @@ def get_news():
                 )
 
 
-            if not link or link == "#":
+            if not link:
 
                 continue
 
+
+            # =================================================
+            # PUBLICATION DATE
+            # =================================================
 
             published = item.get(
                 "FormatedDate",
@@ -154,13 +202,19 @@ def get_news():
             )
 
 
+            # =================================================
+            # NEWS TYPE
+            # =================================================
+
             news_type = item.get(
                 "NewsType",
                 "WHO NEWS"
             )
 
 
-            # Work out a simple category
+            # =================================================
+            # SIMPLE CATEGORY
+            # =================================================
 
             title_lower = title.lower()
 
@@ -172,14 +226,29 @@ def get_news():
                     "measles",
                     "polio",
                     "outbreak",
-                    "disease",
                     "mpox",
                     "cholera",
-                    "infection"
+                    "infection",
+                    "disease"
                 ]
             ):
 
-                category = "OUTBREAK"
+                category = "OUTBREAK & DISEASE"
+
+
+            elif any(
+                word in title_lower
+                for word in [
+                    "vaccine",
+                    "vaccination",
+                    "immunisation",
+                    "immunization",
+                    "vaccinated",
+                    "coverage"
+                ]
+            ):
+
+                category = "IMMUNISATION"
 
 
             elif any(
@@ -200,21 +269,6 @@ def get_news():
             elif any(
                 word in title_lower
                 for word in [
-                    "vaccine",
-                    "vaccination",
-                    "immunisation",
-                    "immunization",
-                    "coverage",
-                    "vaccinated"
-                ]
-            ):
-
-                category = "IMMUNISATION"
-
-
-            elif any(
-                word in title_lower
-                for word in [
                     "guidance",
                     "recommendation",
                     "position paper",
@@ -223,13 +277,17 @@ def get_news():
                 ]
             ):
 
-                category = "POLICY"
+                category = "POLICY & GUIDANCE"
 
 
             else:
 
-                category = "HEALTH NEWS"
+                category = "GLOBAL HEALTH"
 
+
+            # =================================================
+            # SAVE ARTICLE
+            # =================================================
 
             articles.append({
 
@@ -246,6 +304,12 @@ def get_news():
             })
 
 
+        print(
+            "WHO NEWS ARTICLES LOADED:",
+            len(articles)
+        )
+
+
         return articles
 
 
@@ -257,7 +321,6 @@ def get_news():
         )
 
         return []
-
 
 # =========================================================
 # HOME
