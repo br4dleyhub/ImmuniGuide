@@ -63,8 +63,6 @@ def get_news():
 
         articles = []
 
-        # WHO API may return articles inside "value"
-
         if isinstance(data, dict):
 
             data = data.get(
@@ -103,8 +101,6 @@ def get_news():
 
                     pass
 
-
-            # Fallback to FormatedDate
 
             date = item.get(
                 "FormatedDate",
@@ -153,23 +149,16 @@ def get_news():
 
             if link:
 
-                # Remove WHO domain if included
-
                 link = link.replace(
                     "https://www.who.int",
                     ""
                 )
 
 
-                # Make sure the link starts with /
-
                 if not link.startswith("/"):
 
                     link = "/" + link
 
-
-                # Add /news/item/ when WHO returns
-                # only the article slug
 
                 if not link.startswith(
                     "/news/item/"
@@ -322,6 +311,7 @@ def get_news():
 
         return []
 
+
 # =========================================================
 # HOME
 # =========================================================
@@ -331,6 +321,7 @@ def home():
 
     conn = get_db_connection()
 
+
     mission = conn.execute("""
         SELECT title, content
         FROM AboutInfo
@@ -338,11 +329,13 @@ def home():
         LIMIT 1
     """).fetchone()
 
+
     personas = conn.execute("""
         SELECT title, content
         FROM AboutInfo
         WHERE info_type = 'persona'
     """).fetchall()
+
 
     team = conn.execute("""
         SELECT title, content
@@ -350,11 +343,13 @@ def home():
         WHERE info_type = 'team'
     """).fetchall()
 
+
     facts = conn.execute("""
         SELECT title, content
         FROM AboutInfo
         WHERE info_type = 'fact'
     """).fetchall()
+
 
     teamwork = conn.execute("""
         SELECT title, content
@@ -363,38 +358,53 @@ def home():
         LIMIT 1
     """).fetchone()
 
+
     countries = conn.execute("""
         SELECT COUNT(*)
         FROM Country
     """).fetchone()[0]
+
 
     years = conn.execute("""
         SELECT COUNT(DISTINCT YearID)
         FROM YearDate
     """).fetchone()[0]
 
+
     antigens = conn.execute("""
         SELECT COUNT(*)
         FROM Antigen
     """).fetchone()[0]
+
 
     infection_types = conn.execute("""
         SELECT COUNT(*)
         FROM Infection_Type
     """).fetchone()[0]
 
+
     conn.close()
+
 
     return render_template(
         "home.html",
+
         mission=mission,
+
         personas=personas,
+
         team=team,
+
         facts=facts,
+
         teamwork=teamwork,
+
         countries=countries,
+
         years=years,
+
         antigens=antigens,
+
         infection_types=infection_types
     )
 
@@ -408,14 +418,31 @@ def explore():
 
     conn = get_db_connection()
 
+
     # =========================================================
     # GET FILTERS
     # =========================================================
 
-    region = request.args.get("region", "").strip()
-    country = request.args.get("country", "").strip()
-    year = request.args.get("year", "").strip()
-    antigen = request.args.get("antigen", "").strip()
+    region = request.args.get(
+        "region",
+        ""
+    ).strip()
+
+    country = request.args.get(
+        "country",
+        ""
+    ).strip()
+
+    year = request.args.get(
+        "year",
+        ""
+    ).strip()
+
+    antigen = request.args.get(
+        "antigen",
+        ""
+    ).strip()
+
 
     # =========================================================
     # DEFAULT VALUES
@@ -426,16 +453,21 @@ def explore():
     coverage_level = None
 
     people_per_100 = None
+
     target_population = None
+
     doses_administered = None
 
     regional_summary = None
 
     regional_coverage_level = None
+
     herd_immunity_status = None
 
     countries_90 = []
+
     countries_90_percentage = None
+
 
     # =========================================================
     # REGIONS
@@ -449,11 +481,9 @@ def explore():
         ORDER BY region
     """).fetchall()
 
+
     # =========================================================
     # COUNTRIES
-    #
-    # If a region is selected, only show countries
-    # belonging to that region.
     # =========================================================
 
     if region:
@@ -467,7 +497,9 @@ def explore():
             FROM Country
             WHERE region = ?
             ORDER BY name
-        """, (region,)).fetchall()
+        """, (
+            region,
+        )).fetchall()
 
     else:
 
@@ -481,6 +513,7 @@ def explore():
             ORDER BY name
         """).fetchall()
 
+
     # =========================================================
     # YEARS
     # =========================================================
@@ -490,6 +523,7 @@ def explore():
         FROM YearDate
         ORDER BY YearID DESC
     """).fetchall()
+
 
     # =========================================================
     # ANTIGENS
@@ -503,10 +537,9 @@ def explore():
         ORDER BY name
     """).fetchall()
 
+
     # =========================================================
     # COUNTRY RESULT
-    #
-    # Country + Year + Antigen
     # =========================================================
 
     if country and year and antigen:
@@ -516,18 +549,22 @@ def explore():
                 Vaccination.*,
                 Antigen.name AS vaccine_name,
                 Country.name AS country_name
+
             FROM Vaccination
 
             JOIN Antigen
-                ON Vaccination.antigen = Antigen.AntigenID
+                ON Vaccination.antigen =
+                   Antigen.AntigenID
 
             JOIN Country
-                ON Vaccination.country = Country.CountryID
+                ON Vaccination.country =
+                   Country.CountryID
 
             WHERE Vaccination.country = ?
               AND Vaccination.year = ?
               AND Vaccination.antigen = ?
         """
+
 
         params = [
             country,
@@ -535,8 +572,6 @@ def explore():
             antigen
         ]
 
-        # Make sure the country belongs to the
-        # selected region.
 
         if region:
 
@@ -544,20 +579,22 @@ def explore():
                 AND Country.region = ?
             """
 
-            params.append(region)
+            params.append(
+                region
+            )
+
 
         result = conn.execute(
             query,
             params
         ).fetchone()
 
+
         # =====================================================
         # COUNTRY CALCULATIONS
         # =====================================================
 
         if result:
-
-            # Coverage
 
             try:
 
@@ -574,7 +611,6 @@ def explore():
 
                 people_per_100 = None
 
-            # Target population
 
             try:
 
@@ -588,7 +624,6 @@ def explore():
 
                 target_population = None
 
-            # Doses administered
 
             try:
 
@@ -602,7 +637,6 @@ def explore():
 
                 doses_administered = None
 
-            # Coverage classification
 
             if people_per_100 is not None:
 
@@ -622,10 +656,9 @@ def explore():
 
                     coverage_level = "Low"
 
+
     # =========================================================
     # REGIONAL RESULT
-    #
-    # Region + Year + Antigen
     # =========================================================
 
     if region and year and antigen:
@@ -663,16 +696,20 @@ def explore():
             FROM Vaccination
 
             JOIN Country
-                ON Vaccination.country = Country.CountryID
+                ON Vaccination.country =
+                   Country.CountryID
 
             JOIN Region
-                ON Country.region = Region.RegionID
+                ON Country.region =
+                   Region.RegionID
 
             JOIN Antigen
-                ON Vaccination.antigen = Antigen.AntigenID
+                ON Vaccination.antigen =
+                   Antigen.AntigenID
 
             JOIN YearDate
-                ON Vaccination.year = YearDate.YearID
+                ON Vaccination.year =
+                   YearDate.YearID
 
             WHERE Country.region = ?
               AND Vaccination.year = ?
@@ -681,7 +718,9 @@ def explore():
             GROUP BY
 
                 Region.region,
+
                 YearDate.YearID,
+
                 Antigen.name
 
         """, (
@@ -690,8 +729,9 @@ def explore():
             antigen
         )).fetchone()
 
+
         # =====================================================
-        # REGIONAL COVERAGE / HERD-IMMUNITY LEVEL
+        # REGIONAL COVERAGE
         # =====================================================
 
         if regional_summary:
@@ -700,11 +740,14 @@ def explore():
                 "average_coverage"
             ]
 
+
             if average_coverage is not None:
 
                 if average_coverage >= 90:
 
-                    regional_coverage_level = "Very High"
+                    regional_coverage_level = (
+                        "Very High"
+                    )
 
                     herd_immunity_status = (
                         "90% target reached"
@@ -712,7 +755,9 @@ def explore():
 
                 elif average_coverage >= 75:
 
-                    regional_coverage_level = "High"
+                    regional_coverage_level = (
+                        "High"
+                    )
 
                     herd_immunity_status = (
                         "Below 90% target"
@@ -720,7 +765,9 @@ def explore():
 
                 elif average_coverage >= 50:
 
-                    regional_coverage_level = "Moderate"
+                    regional_coverage_level = (
+                        "Moderate"
+                    )
 
                     herd_immunity_status = (
                         "Below 90% target"
@@ -728,19 +775,27 @@ def explore():
 
                 else:
 
-                    regional_coverage_level = "Low"
+                    regional_coverage_level = (
+                        "Low"
+                    )
 
                     herd_immunity_status = (
                         "Below 90% target"
                     )
 
+
             # =================================================
             # CALCULATE 90% PERCENTAGE
             # =================================================
 
-            total = regional_summary["country_count"]
+            total = regional_summary[
+                "country_count"
+            ]
 
-            reached_90 = regional_summary["countries_90"]
+            reached_90 = regional_summary[
+                "countries_90"
+            ]
+
 
             if total and reached_90 is not None:
 
@@ -750,6 +805,7 @@ def explore():
                     ) * 100,
                     2
                 )
+
 
         # =====================================================
         # COUNTRIES REACHING 90%
@@ -791,18 +847,11 @@ def explore():
                 antigen
             )).fetchall()
 
-    # =========================================================
-    # CLOSE DATABASE
-    # =========================================================
 
     conn.close()
 
-    # =========================================================
-    # RENDER PAGE
-    # =========================================================
 
     return render_template(
-
         "explore.html",
 
         regions=regions,
@@ -832,39 +881,70 @@ def explore():
         countries_90=countries_90,
 
         countries_90_percentage=countries_90_percentage
-
     )
 
+
+# =========================================================
+# LEVEL 2B
+# INFECTION DATA BY ECONOMIC STATUS
+# =========================================================
 
 @app.route("/infections")
 def infections():
 
     conn = get_db_connection()
 
-    # Level 2B filters
-    economic_status = request.args.get("economy", "")
-    infection_type = request.args.get("infection", "")
-    year = request.args.get("year", "")
 
-    # Level 3B filters
-    global_infection = request.args.get("global_infection", "")
-    global_year = request.args.get("global_year", "")
+    # =========================================================
+    # FILTERS
+    # =========================================================
 
-    # Economic status options
+    economic_status = request.args.get(
+        "economy",
+        ""
+    )
+
+    infection_type = request.args.get(
+        "infection",
+        ""
+    )
+
+    year = request.args.get(
+        "year",
+        ""
+    )
+
+
+    # =========================================================
+    # ECONOMIC STATUS OPTIONS
+    # =========================================================
+
     economies = conn.execute("""
-        SELECT economyID, phase
+        SELECT
+            economyID,
+            phase
         FROM Economy
         ORDER BY economyID
     """).fetchall()
 
-    # Infection type options
+
+    # =========================================================
+    # INFECTION TYPE OPTIONS
+    # =========================================================
+
     infection_types = conn.execute("""
-        SELECT id, description
+        SELECT
+            id,
+            description
         FROM Infection_Type
         ORDER BY description
     """).fetchall()
 
-    # Available years
+
+    # =========================================================
+    # AVAILABLE YEARS
+    # =========================================================
+
     years = conn.execute("""
         SELECT DISTINCT year
         FROM InfectionData
@@ -873,148 +953,102 @@ def infections():
 
 
     # =========================================================
-    # LEVEL 2B
-    # Infection data by economic status
+    # LEVEL 2B RESULTS
     # =========================================================
 
     results = []
+    summary_results = []
+
 
     if economic_status and infection_type and year:
 
         results = conn.execute("""
             SELECT
+
                 c.name AS country,
+
                 e.phase AS economic_status,
+
                 it.description AS infection_type,
+
                 i.year,
+
                 i.cases,
+
                 cp.population,
 
                 ROUND(
-                    (i.cases * 100000.0) / cp.population,
+                    (i.cases * 100000.0)
+                    / cp.population,
                     2
                 ) AS infection_rate
 
             FROM InfectionData i
 
             JOIN Country c
-                ON i.country = c.CountryID
+                ON i.country =
+                   c.CountryID
 
             JOIN Economy e
-                ON c.economy = e.economyID
+                ON c.economy =
+                   e.economyID
 
             JOIN Infection_Type it
-                ON i.inf_type = it.id
+                ON i.inf_type =
+                   it.id
 
             JOIN CountryPopulation cp
-                ON i.country = cp.country
-                AND i.year = cp.year
+                ON i.country =
+                   cp.country
+
+                AND i.year =
+                    cp.year
 
             WHERE e.economyID = ?
+
               AND it.id = ?
+
               AND i.year = ?
+
               AND cp.population > 0
 
             ORDER BY i.cases DESC
+
         """, (
             economic_status,
             infection_type,
             year
         )).fetchall()
 
-
-    # =========================================================
-    # LEVEL 3B
-    # Global infection rate
-    # =========================================================
-
-    global_results = []
-
-    global_rate = None
-
-    countries_above_global = 0
-
-    if global_infection and global_year:
-
-        global_data = conn.execute("""
+        summary_results = conn.execute("""
             SELECT
+                e.phase AS economic_status,
+                COUNT(DISTINCT i.country) AS country_count,
                 SUM(i.cases) AS total_cases,
-                SUM(cp.population) AS total_population
-
+                ROUND(
+                    SUM(i.cases) * 100000.0
+                    / SUM(cp.population),
+                    2
+                ) AS combined_infection_rate
             FROM InfectionData i
-
+            JOIN Country c
+                ON i.country = c.CountryID
+            JOIN Economy e
+                ON c.economy = e.economyID
+            JOIN Infection_Type it
+                ON i.inf_type = it.id
             JOIN CountryPopulation cp
                 ON i.country = cp.country
                 AND i.year = cp.year
-
-            WHERE i.inf_type = ?
+            WHERE it.id = ?
               AND i.year = ?
               AND cp.population > 0
+            GROUP BY e.economyID, e.phase
+            ORDER BY e.economyID
         """, (
-            global_infection,
-            global_year
-        )).fetchone()
-
-
-        if global_data["total_population"]:
-
-            global_rate = round(
-                (
-                    global_data["total_cases"]
-                    * 100000.0
-                )
-                / global_data["total_population"],
-                2
-            )
-
-
-            # Find countries above global rate
-            global_results = conn.execute("""
-                SELECT
-                    c.name AS country,
-                    e.phase AS economic_status,
-                    it.description AS infection_type,
-                    i.year,
-                    i.cases,
-                    cp.population,
-
-                    ROUND(
-                        (i.cases * 100000.0) / cp.population,
-                        2
-                    ) AS infection_rate
-
-                FROM InfectionData i
-
-                JOIN Country c
-                    ON i.country = c.CountryID
-
-                JOIN Economy e
-                    ON c.economy = e.economyID
-
-                JOIN Infection_Type it
-                    ON i.inf_type = it.id
-
-                JOIN CountryPopulation cp
-                    ON i.country = cp.country
-                    AND i.year = cp.year
-
-                WHERE i.inf_type = ?
-                  AND i.year = ?
-                  AND cp.population > 0
-
-                  AND (
-                        (i.cases * 100000.0) / cp.population
-                      ) > ?
-
-                ORDER BY infection_rate DESC
-            """, (
-                global_infection,
-                global_year,
-                global_rate
-            )).fetchall()
-
-
-            countries_above_global = len(global_results)
+            infection_type,
+            year
+        )).fetchall()
 
 
     conn.close()
@@ -1029,7 +1063,6 @@ def infections():
 
         years=years,
 
-        # Level 2B
         results=results,
 
         selected_economy=economic_status,
@@ -1038,17 +1071,210 @@ def infections():
 
         selected_year=year,
 
-        # Level 3B
+        summary_results=summary_results,
+    )
+
+
+# =========================================================
+# LEVEL 3B
+# COUNTRIES ABOVE GLOBAL INFECTION RATE
+# =========================================================
+
+@app.route("/infection-analysis")
+def infection_analysis():
+
+    conn = get_db_connection()
+
+
+    # =========================================================
+    # FILTERS
+    # =========================================================
+
+    global_infection = request.args.get(
+        "global_infection",
+        ""
+    )
+
+    global_year = request.args.get(
+        "global_year",
+        ""
+    )
+
+
+    # =========================================================
+    # INFECTION TYPES
+    # =========================================================
+
+    infection_types = conn.execute("""
+        SELECT
+            id,
+            description
+        FROM Infection_Type
+        ORDER BY description
+    """).fetchall()
+
+
+    # =========================================================
+    # YEARS
+    # =========================================================
+
+    years = conn.execute("""
+        SELECT DISTINCT year
+        FROM InfectionData
+        ORDER BY year DESC
+    """).fetchall()
+
+
+    # =========================================================
+    # DEFAULT VALUES
+    # =========================================================
+
+    global_results = []
+
+    global_rate = None
+
+    countries_above_global = 0
+
+
+    # =========================================================
+    # CALCULATE GLOBAL INFECTION RATE
+    # =========================================================
+
+    if global_infection and global_year:
+
+        global_data = conn.execute("""
+            SELECT
+
+                SUM(i.cases) AS total_cases,
+
+                SUM(cp.population)
+                    AS total_population
+
+            FROM InfectionData i
+
+            JOIN CountryPopulation cp
+                ON i.country =
+                   cp.country
+
+                AND i.year =
+                    cp.year
+
+            WHERE i.inf_type = ?
+
+              AND i.year = ?
+
+              AND cp.population > 0
+
+        """, (
+            global_infection,
+            global_year
+        )).fetchone()
+
+
+        if (
+            global_data["total_population"]
+            and global_data["total_cases"]
+            is not None
+        ):
+
+            global_rate = round(
+                (
+                    global_data["total_cases"]
+                    * 100000.0
+                )
+                / global_data["total_population"],
+                2
+            )
+
+
+            # =================================================
+            # FIND COUNTRIES ABOVE GLOBAL RATE
+            # =================================================
+
+            global_results = conn.execute("""
+            SELECT
+                c.name AS country,
+                e.phase AS economic_status,
+                it.description AS infection_type,
+                i.year,
+                i.cases,
+                cp.population,
+                ROUND(
+                    (i.cases * 100000.0)
+                    / cp.population,
+                    2
+                ) AS infection_rate
+            FROM InfectionData i
+            JOIN Country c
+                ON i.country = c.CountryID
+            JOIN Economy e
+                ON c.economy = e.economyID
+            JOIN Infection_Type it
+                ON i.inf_type = it.id
+            JOIN CountryPopulation cp
+                ON i.country = cp.country
+                AND i.year = cp.year
+            WHERE i.inf_type = ?
+            AND i.year = ?
+            AND cp.population > 0
+            AND (
+                    (i.cases * 100000.0)
+                    / cp.population
+                )
+                >
+                (
+                    SELECT
+                        SUM(i2.cases) * 100000.0
+                        / SUM(cp2.population)
+                    FROM InfectionData i2
+                    JOIN CountryPopulation cp2
+                        ON i2.country = cp2.country
+                        AND i2.year = cp2.year
+                    WHERE i2.inf_type = ?
+                    AND i2.year = ?
+                    AND cp2.population > 0
+                )
+            ORDER BY infection_rate DESC
+        """, (
+            global_infection,
+            global_year,
+            global_infection,
+            global_year
+        )).fetchall()
+
+
+            countries_above_global = len(
+                global_results
+            )
+
+
+    conn.close()
+
+
+    return render_template(
+        "infection_analysis.html",
+
+        infection_types=infection_types,
+
+        years=years,
+
         global_results=global_results,
 
         global_rate=global_rate,
 
-        countries_above_global=countries_above_global,
+        countries_above_global=(
+            countries_above_global
+        ),
 
-        selected_global_infection=global_infection,
+        selected_global_infection=(
+            global_infection
+        ),
 
-        selected_global_year=global_year
+        selected_global_year=(
+            global_year
+        )
     )
+
 
 # =========================================================
 # COMPARE
@@ -1077,28 +1303,39 @@ def compare():
     connection = get_db_connection()
 
 
-    # Get countries
+    # =========================================================
+    # COUNTRIES
+    # =========================================================
 
     countries = connection.execute("""
-        SELECT CountryID, name
+        SELECT
+            CountryID,
+            name
         FROM Country
         ORDER BY name
     """).fetchall()
 
 
-    # Get vaccines
+    # =========================================================
+    # VACCINES
+    # =========================================================
 
     antigens = connection.execute("""
-        SELECT AntigenID, name
+        SELECT
+            AntigenID,
+            name
         FROM Antigen
         ORDER BY name
     """).fetchall()
 
 
-    # Get years
+    # =========================================================
+    # YEARS
+    # =========================================================
 
     years = connection.execute("""
-        SELECT YearID
+        SELECT
+            YearID
         FROM YearDate
         ORDER BY YearID DESC
     """).fetchall()
@@ -1115,17 +1352,24 @@ def compare():
     comparison_status = None
 
 
-    # Get both years
+    # =========================================================
+    # GET BOTH YEARS
+    # =========================================================
 
     if country and antigen and year1 and year2:
 
         result1 = connection.execute("""
             SELECT *
             FROM Vaccination
+
             WHERE country = ?
+
               AND antigen = ?
+
               AND year = ?
+
               AND inf_type = ?
+
         """, (
             country,
             antigen,
@@ -1137,10 +1381,15 @@ def compare():
         result2 = connection.execute("""
             SELECT *
             FROM Vaccination
+
             WHERE country = ?
+
               AND antigen = ?
+
               AND year = ?
+
               AND inf_type = ?
+
         """, (
             country,
             antigen,
@@ -1149,7 +1398,9 @@ def compare():
         )).fetchone()
 
 
-    # Calculate change
+    # =========================================================
+    # CALCULATE CHANGE
+    # =========================================================
 
     if result1 and result2:
 
@@ -1173,7 +1424,9 @@ def compare():
             coverage_change = None
 
 
-    # Create comparison message
+    # =========================================================
+    # COMPARISON MESSAGE
+    # =========================================================
 
     if coverage_change is not None:
 
@@ -1240,15 +1493,20 @@ def compare():
 
         coverage_change=coverage_change,
 
-        comparison_message=comparison_message,
+        comparison_message=(
+            comparison_message
+        ),
 
-        comparison_status=comparison_status
+        comparison_status=(
+            comparison_status
+        )
 
     )
 
 
 # =========================================================
-# TRENDS
+# LEVEL 3A
+# BIGGEST IMPROVEMENT IN VACCINATION RATES
 # =========================================================
 
 @app.route("/trends")
@@ -1256,10 +1514,31 @@ def trends():
 
     conn = get_db_connection()
 
-    start_year = request.args.get("start_year", "")
-    end_year = request.args.get("end_year", "")
-    antigen = request.args.get("antigen", "")
-    limit = request.args.get("limit", "10")
+
+    start_year = request.args.get(
+        "start_year",
+        ""
+    )
+
+    end_year = request.args.get(
+        "end_year",
+        ""
+    )
+
+    antigen = request.args.get(
+        "antigen",
+        ""
+    )
+
+    limit = request.args.get(
+        "limit",
+        "10"
+    )
+
+
+    # =========================================================
+    # YEARS
+    # =========================================================
 
     years = conn.execute("""
         SELECT DISTINCT YearID
@@ -1267,23 +1546,39 @@ def trends():
         ORDER BY YearID DESC
     """).fetchall()
 
+
+    # =========================================================
+    # ANTIGENS
+    # =========================================================
+
     antigens = conn.execute("""
-        SELECT AntigenID, name
+        SELECT
+            AntigenID,
+            name
         FROM Antigen
         ORDER BY name
     """).fetchall()
+
 
     results = []
 
     total_countries = 0
 
-    # Check that the selected number is valid
+
+    # =========================================================
+    # CHECK LIMIT
+    # =========================================================
 
     try:
 
         limit = int(limit)
 
-        if limit not in [5, 10, 20, 50]:
+        if limit not in [
+            5,
+            10,
+            20,
+            50
+        ]:
 
             limit = 10
 
@@ -1291,35 +1586,61 @@ def trends():
 
         limit = 10
 
+
+    # =========================================================
+    # FIND BIGGEST IMPROVEMENT
+    # =========================================================
+
     if start_year and end_year and antigen:
 
         results = conn.execute("""
             SELECT
+
                 c.name AS country,
-                start_data.coverage AS start_coverage,
-                end_data.coverage AS end_coverage,
+
+                start_data.coverage
+                    AS start_coverage,
+
+                end_data.coverage
+                    AS end_coverage,
+
                 ROUND(
-                    end_data.coverage - start_data.coverage,
+                    end_data.coverage
+                    - start_data.coverage,
                     2
                 ) AS improvement
+
             FROM Vaccination start_data
 
             JOIN Vaccination end_data
-                ON start_data.country = end_data.country
-                AND start_data.antigen = end_data.antigen
+
+                ON start_data.country =
+                   end_data.country
+
+                AND start_data.antigen =
+                    end_data.antigen
 
             JOIN Country c
-                ON start_data.country = c.CountryID
+
+                ON start_data.country =
+                   c.CountryID
 
             WHERE start_data.year = ?
+
               AND end_data.year = ?
+
               AND start_data.antigen = ?
-              AND start_data.coverage IS NOT NULL
-              AND end_data.coverage IS NOT NULL
+
+              AND start_data.coverage
+                  IS NOT NULL
+
+              AND end_data.coverage
+                  IS NOT NULL
 
             ORDER BY improvement DESC
 
             LIMIT ?
+
         """, (
             start_year,
             end_year,
@@ -1327,20 +1648,45 @@ def trends():
             limit
         )).fetchall()
 
-        total_countries = len(results)
+
+        total_countries = len(
+            results
+        )
+
 
     conn.close()
 
+
     return render_template(
+
         "trends.html",
+
         years=years,
+
         antigens=antigens,
+
         results=results,
-        total_countries=total_countries,
-        selected_start_year=start_year,
-        selected_end_year=end_year,
-        selected_antigen=antigen,
-        selected_limit=limit
+
+        total_countries=(
+            total_countries
+        ),
+
+        selected_start_year=(
+            start_year
+        ),
+
+        selected_end_year=(
+            end_year
+        ),
+
+        selected_antigen=(
+            antigen
+        ),
+
+        selected_limit=(
+            limit
+        )
+
     )
 
 

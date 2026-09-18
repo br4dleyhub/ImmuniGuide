@@ -2,7 +2,7 @@
 
 {% block title %}
 
-Infection Data | ImmuniGuide
+Infection Analysis | ImmuniGuide
 
 {% endblock %}
 
@@ -16,23 +16,24 @@ Infection Data | ImmuniGuide
     <div class="page-header">
 
         <p class="eyebrow">
-            INFECTION DATA
+            INFECTION ANALYSIS
         </p>
 
         <h1>
-            Understand Infection Patterns
+            Countries Above the Global Infection Rate
         </h1>
 
         <p>
-            Explore infection cases across countries
-            by economic status, infection type and year.
+            Compare country infection rates with the
+            calculated global infection rate for a selected
+            infection type and year.
         </p>
 
     </div>
 
 
     <!-- =====================================================
-         LEVEL 2B
+         LEVEL 3B
          ===================================================== -->
 
     <div class="infection-section">
@@ -40,80 +41,45 @@ Infection Data | ImmuniGuide
         <div class="page-header">
 
             <p class="eyebrow">
-                LEVEL 2B
+                LEVEL 3B
             </p>
 
             <h2>
-                Infection Data by Economic Status
+                Identify Countries Above Average
             </h2>
 
             <p>
-                Select an economic status, infection type and year
-                to explore reported infection cases across countries.
+                Select an infection type and year to calculate
+                the global infection rate and identify countries
+                with a higher reported infection rate.
             </p>
 
         </div>
 
 
-        <!-- LEVEL 2B SEARCH -->
+        <!-- =================================================
+             SEARCH FORM
+             ================================================= -->
 
         <div class="search-card">
 
             <form
                 method="GET"
-                action="{{ url_for('infections') }}"
+                action="{{ url_for('infection_analysis') }}"
             >
-
-
-                <!-- ECONOMIC STATUS -->
-
-                <div class="form-group">
-
-                    <label for="economy">
-                        Economic Status
-                    </label>
-
-                    <select
-                        id="economy"
-                        name="economy"
-                        required
-                    >
-
-                        <option value="">
-                            Select economic status
-                        </option>
-
-                        {% for economy in economies %}
-
-                        <option
-                            value="{{ economy['economyID'] }}"
-                            {% if selected_economy == economy['economyID']|string %}
-                            selected
-                            {% endif %}
-                        >
-
-                            {{ economy['phase'] }}
-
-                        </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
 
 
                 <!-- INFECTION TYPE -->
 
                 <div class="form-group">
 
-                    <label for="infection">
+                    <label for="global_infection">
                         Infection Type
                     </label>
 
                     <select
-                        id="infection"
-                        name="infection"
+                        id="global_infection"
+                        name="global_infection"
                         required
                     >
 
@@ -121,11 +87,12 @@ Infection Data | ImmuniGuide
                             Select infection type
                         </option>
 
+
                         {% for infection in infection_types %}
 
                         <option
                             value="{{ infection['id'] }}"
-                            {% if selected_infection == infection['id'] %}
+                            {% if selected_global_infection == infection['id'] %}
                             selected
                             {% endif %}
                         >
@@ -145,13 +112,13 @@ Infection Data | ImmuniGuide
 
                 <div class="form-group">
 
-                    <label for="year">
+                    <label for="global_year">
                         Year
                     </label>
 
                     <select
-                        id="year"
-                        name="year"
+                        id="global_year"
+                        name="global_year"
                         required
                     >
 
@@ -159,11 +126,12 @@ Infection Data | ImmuniGuide
                             Select year
                         </option>
 
+
                         {% for year_item in years %}
 
                         <option
                             value="{{ year_item['year'] }}"
-                            {% if selected_year == year_item['year']|string %}
+                            {% if selected_global_year == year_item['year']|string %}
                             selected
                             {% endif %}
                         >
@@ -186,7 +154,7 @@ Infection Data | ImmuniGuide
                     class="primary-button"
                 >
 
-                    Explore Infection Data
+                    Analyse Infection Rate
 
                 </button>
 
@@ -195,11 +163,11 @@ Infection Data | ImmuniGuide
         </div>
 
 
-        <!-- =====================================================
-             LEVEL 2B RESULTS
-             ===================================================== -->
+        <!-- =================================================
+             RESULTS
+             ================================================= -->
 
-        {% if results %}
+        {% if global_rate is not none %}
 
         <div class="explore-result">
 
@@ -211,26 +179,18 @@ Infection Data | ImmuniGuide
                 <div>
 
                     <p class="eyebrow">
-                        LEVEL 2B RESULTS
+                        LEVEL 3B RESULTS
                     </p>
 
                     <h2>
-                        Infection Cases by Economic Status
+                        Global Infection Rate
                     </h2>
 
                     <p class="result-location">
 
-                        {{ results|length }}
+                        {{ global_results|length }}
 
-                        countries found
-
-                        ·
-
-                        {{ results[0]['infection_type'] }}
-
-                        ·
-
-                        {{ results[0]['year'] }}
+                        countries above the global rate
 
                     </p>
 
@@ -239,34 +199,34 @@ Infection Data | ImmuniGuide
 
                 <div class="coverage-badge">
 
-                    {{ results[0]['economic_status'] }}
+                    {{ selected_global_year }}
 
                 </div>
 
             </div>
 
 
-            <!-- LEVEL 2B SUMMARY -->
+            <!-- =================================================
+                 SUMMARY CARDS
+                 ================================================= -->
 
             <div class="explore-stat-grid">
 
 
-                <!-- ECONOMIC STATUS -->
+                <!-- GLOBAL RATE -->
 
                 <div class="explore-stat-card">
 
                     <span class="stat-label">
-                        ECONOMIC STATUS
+                        GLOBAL INFECTION RATE
                     </span>
 
                     <strong>
-
-                        {{ results[0]['economic_status'] }}
-
+                        {{ global_rate }}
                     </strong>
 
                     <p>
-                        Selected economic group.
+                        Reported cases per 100,000 people.
                     </p>
 
                 </div>
@@ -277,24 +237,21 @@ Infection Data | ImmuniGuide
                 <div class="explore-stat-card">
 
                     <span class="stat-label">
-                        COUNTRIES
+                        ABOVE GLOBAL RATE
                     </span>
 
                     <strong>
-
-                        {{ results|length }}
-
+                        {{ countries_above_global }}
                     </strong>
 
                     <p>
-                        Countries with available
-                        infection data.
+                        Countries with a higher infection rate.
                     </p>
 
                 </div>
 
 
-                <!-- INFECTION TYPE -->
+                <!-- INFECTION -->
 
                 <div class="explore-stat-card">
 
@@ -304,7 +261,15 @@ Infection Data | ImmuniGuide
 
                     <strong>
 
-                        {{ results[0]['infection_type'] }}
+                        {% for infection in infection_types %}
+
+                            {% if selected_global_infection == infection['id'] %}
+
+                                {{ infection['description'] }}
+
+                            {% endif %}
+
+                        {% endfor %}
 
                     </strong>
 
@@ -324,9 +289,7 @@ Infection Data | ImmuniGuide
                     </span>
 
                     <strong>
-
-                        {{ results[0]['year'] }}
-
+                        {{ selected_global_year }}
                     </strong>
 
                     <p>
@@ -335,81 +298,18 @@ Infection Data | ImmuniGuide
 
                 </div>
 
-            </div>
-
-        {% if summary_results %}
-
-        <section class="results-section">
-
-            <div class="section-heading">
-
-                <div>
-
-                    <span class="eyebrow">
-                        Level 2B Summary
-                    </span>
-
-                    <h2>
-                        Cases by Economic Status
-                    </h2>
-
-                    <p>
-                        This summary groups the selected infection data by
-                        economic status for the selected year.
-                    </p>
-
-                </div>
 
             </div>
-
-            <div class="results-grid">
-
-                {% for summary in summary_results %}
-
-                <div class="result-card">
-
-                    <h3>
-                        {{ summary['economic_status'] }}
-                    </h3>
-
-                    <p>
-                        Countries:
-                        <strong>
-                            {{ summary['country_count'] }}
-                        </strong>
-                    </p>
-
-                    <p>
-                        Total reported cases:
-                        <strong>
-                            {{ "{:,.0f}".format(summary['total_cases']) }}
-                        </strong>
-                    </p>
-
-                    <p>
-                        Combined infection rate:
-                        <strong>
-                            {{ summary['combined_infection_rate'] }}
-                        </strong>
-                        per 100,000
-                    </p>
-
-                </div>
-
-                {% endfor %}
-
-            </div>
-
-        </section>
-
-        {% endif %}
 
 
             <!-- =================================================
                  COUNTRY RESULTS
                  ================================================= -->
 
+            {% if global_results %}
+
             <div class="infection-results">
+
 
                 <div class="infection-result-header">
 
@@ -420,12 +320,12 @@ Infection Data | ImmuniGuide
                         </p>
 
                         <h2>
-                            Reported Infection Cases
+                            Countries Above Global Rate
                         </h2>
 
                         <p>
-                            Results are organised by country
-                            within the selected economic status.
+                            Countries are sorted from the highest
+                            infection rate to the lowest.
                         </p>
 
                     </div>
@@ -433,11 +333,10 @@ Infection Data | ImmuniGuide
                 </div>
 
 
-                <!-- COUNTRY CARDS -->
-
                 <div class="infection-grid">
 
-                    {% for result in results %}
+
+                    {% for result in global_results %}
 
                     <div class="infection-card">
 
@@ -460,7 +359,7 @@ Infection Data | ImmuniGuide
                         </h3>
 
 
-                        <!-- INFECTION TYPE + YEAR -->
+                        <!-- INFECTION + YEAR -->
 
                         <p class="infection-type">
 
@@ -473,28 +372,50 @@ Infection Data | ImmuniGuide
                         </p>
 
 
-                        <!-- CASES -->
+                        <!-- INFECTION RATE -->
 
                         <div class="infection-cases">
 
                             <span>
-                                REPORTED CASES
+                                INFECTION RATE
                             </span>
 
                             <strong>
 
-                                {{ "{:,}".format(result['cases']) }}
+                                {{ result['infection_rate'] }}
 
                             </strong>
 
                         </div>
 
 
-                        <!-- POPULATION -->
+                        <!-- CASES -->
 
                         <p
                             style="
                                 margin-top: 15px;
+                                color: #60777C;
+                            "
+                        >
+
+                            Reported cases:
+
+                            <strong>
+
+                                {{ "{:,}".format(
+                                    result['cases']
+                                ) }}
+
+                            </strong>
+
+                        </p>
+
+
+                        <!-- POPULATION -->
+
+                        <p
+                            style="
+                                margin-top: 8px;
                                 color: #60777C;
                             "
                         >
@@ -508,7 +429,7 @@ Infection Data | ImmuniGuide
                         </p>
 
 
-                        <!-- INFECTION RATE -->
+                        <!-- COMPARISON WITH GLOBAL RATE -->
 
                         <p
                             style="
@@ -517,13 +438,9 @@ Infection Data | ImmuniGuide
                             "
                         >
 
-                            Infection rate:
+                            Global rate:
 
-                            <strong>
-
-                                {{ result['infection_rate'] }}
-
-                            </strong>
+                            {{ global_rate }}
 
                             per 100,000
 
@@ -534,9 +451,35 @@ Infection Data | ImmuniGuide
 
                     {% endfor %}
 
+
                 </div>
 
             </div>
+
+
+            {% else %}
+
+
+            <!-- NO COUNTRIES ABOVE GLOBAL RATE -->
+
+            <div class="infection-empty">
+
+                <h2>
+                    No Countries Above the Global Rate
+                </h2>
+
+                <p>
+
+                    No countries in the selected dataset
+                    have a reported infection rate higher
+                    than the calculated global rate.
+
+                </p>
+
+            </div>
+
+
+            {% endif %}
 
 
             <!-- =================================================
@@ -551,33 +494,28 @@ Infection Data | ImmuniGuide
 
                 <p>
 
-                    The selected
+                    For
 
                     <strong>
-                        {{ results[0]['economic_status'] }}
+                        {{ selected_global_year }}
+                    </strong>,
+
+                    the calculated global infection rate is
+
+                    <strong>
+                        {{ global_rate }}
                     </strong>
 
-                    economic group contains
+                    reported cases per 100,000 people.
+
+                    The table above identifies
 
                     <strong>
-                        {{ results|length }}
+                        {{ countries_above_global }}
                     </strong>
 
-                    countries with available
-
-                    <strong>
-                        {{ results[0]['infection_type'] }}
-                    </strong>
-
-                    infection data for
-
-                    <strong>
-                        {{ results[0]['year'] }}
-                    </strong>.
-
-                    The results combine information from
-                    the Country, Economy, Infection_Type,
-                    InfectionData and CountryPopulation tables.
+                    countries whose reported infection rate
+                    exceeds this global rate.
 
                 </p>
 
@@ -587,28 +525,31 @@ Infection Data | ImmuniGuide
         </div>
 
 
-        <!-- NO RESULTS -->
+        {% elif selected_global_infection
+            and selected_global_year %}
 
-        {% elif selected_economy
-            and selected_infection
-            and selected_year %}
 
-        <div class="result-card">
+        <!-- =================================================
+             NO GLOBAL DATA
+             ================================================= -->
+
+        <div class="infection-empty">
 
             <h2>
-                No infection data found
+                No Infection Data Found
             </h2>
 
             <p>
 
-                No data was found for the selected
-                economic status, infection type and year.
+                No data was available for the selected
+                infection type and year.
 
-                Try selecting different options.
+                Try selecting another combination.
 
             </p>
 
         </div>
+
 
         {% endif %}
 
